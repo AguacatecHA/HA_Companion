@@ -59,7 +59,8 @@ class WatchSensor(SensorEntity):
         self._config = sensor_config
         
         # Entidad metadata
-        self._attr_name = f"{username.capitalize()} {sensor_config['name']}"
+        self._attr_has_entity_name = True 
+        self._attr_name = f"{sensor_config['name']}"
         self._attr_unique_id = f"{entry_id}_{sensor_config['key']}"
         self._attr_icon = sensor_config.get("icon")
         self._attr_native_unit_of_measurement = sensor_config.get("unit")
@@ -73,9 +74,9 @@ class WatchSensor(SensorEntity):
         # >>> AÑADIR ESTO: DEVICE INFO <<<
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, f"{username}_watch")},
-            name=f"{base_name} Watch",
+            name=f"{base_name} Amazfit",
             manufacturer="Aguacatec Team",
-            model="Zepp OS Watch",
+            model="Amazfit Watch",
             sw_version=None,
         )
         # <<< FIN DEVICE INFO >>>
