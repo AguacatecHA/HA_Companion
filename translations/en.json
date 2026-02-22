@@ -1,0 +1,14 @@
+{
+  "title": "HA Companion",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configure Watch Sensors",
+        "description": "Enter the username from your Zepp watch app",
+        "data": {
+          "username": "Watch Username from Zepp App"
+        }
+      }
+    }
+  }
+}

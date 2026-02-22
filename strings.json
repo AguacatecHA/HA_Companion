@@ -1,0 +1,20 @@
+{
+  "title": "HA Companion",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configure Watch Sensors",
+        "description": "Enter the username from your Zepp watch app (e.g., simulator, john, etc.)",
+        "data": {
+          "username": "Watch Username from Zepp App"
+        }
+      }
+    },
+    "error": {
+      "unknown": "Unexpected error occurred"
+    },
+    "abort": {
+      "already_configured": "This username is already configured"
+    }
+  }
+}

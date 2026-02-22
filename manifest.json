@@ -1,0 +1,13 @@
+{
+    "domain": "ha_companion",
+    "name": "HA Companion",
+    "version": "0.0.1",
+    "documentation": "https://github.com/AguacatecHA/HA-Companion",
+    "requirements": [
+      "aiohttp"
+    ],
+    "issue_tracker": "https://github.com/AguacatecHA/HA-Companion/issues",
+    "codeowners": ["@J-Hollister"],
+    "config_flow": true,
+    "iot_class": "cloud_polling"
+  }
