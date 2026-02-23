@@ -203,4 +203,45 @@ SENSORS = [
         "json_extract": "endTime",
         "time_convert": True   
     },
+    {
+        "key": "sleep_deep_minutes",
+        "name": "Sleep Deep Stage",
+        "attribute": "sleep_stage_data",
+        "unit": "min",
+        "device_class": "duration",
+        "icon": "mdi:sleep",
+        "state_class": "measurement",
+        "sleep_stage_extract": "DEEP_STAGE"
+    },
+    {
+        "key": "sleep_rem_minutes",
+        "name": "Sleep REM Stage",
+        "attribute": "sleep_stage_data",
+        "unit": "min",
+        "device_class": "duration",
+        "icon": "mdi:brain",
+        "state_class": "measurement",
+        "sleep_stage_extract": "REM_STAGE"
+    },
+    {
+        "key": "sleep_light_minutes",
+        "name": "Sleep Light Stage",
+        "attribute": "sleep_stage_data",
+        "unit": "min",
+        "device_class": "duration",
+        "icon": "mdi:weather-night-partly-cloudy",
+        "state_class": "measurement",
+        "sleep_stage_extract": "LIGHT_STAGE"
+    },
+    {
+        "key": "sleep_wake_minutes",
+        "name": "Sleep Wake Stage",
+        "attribute": "sleep_stage_data",
+        "unit": "min",
+        "device_class": "duration",
+        "icon": "mdi:eye",
+        "state_class": "measurement",
+        "sleep_stage_extract": "WAKE_STAGE"
+    },
+
 ]

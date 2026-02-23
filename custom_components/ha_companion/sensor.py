@@ -171,9 +171,65 @@ class WatchSensor(SensorEntity):
                 )
                 return None
 
-        # --- Valor directo (número/string) ---
-        else:
-            return attr_value
+        elif self._config.get("sleep_stage_extract"):
+            return self._extract_sleep_stage(attr_value)
+            # --- Valor directo (número/string) ---
+            else:
+                return attr_value
+
+    def _extract_sleep_stage(self, attr_value):
+        """Calcula minutos totales de cada fase de sueño."""
+        try:
+            # Parsear sleep_stage_data
+            if isinstance(attr_value, str):
+                data = json.loads(attr_value)
+            elif isinstance(attr_value, list):
+                data = attr_value
+            else:
+                return None
+
+            if not isinstance(data, list) or len(data) == 0:
+                return None
+
+            # Obtener constantes de fases desde el sensor maestro
+            master_state = self.hass.states.get(self._master_sensor_id)
+            if not master_state:
+                return None
+
+            raw_constants = master_state.attributes.get("sleep_stage_constant")
+            if raw_constants is None:
+                return None
+
+            # Parsear constantes
+            if isinstance(raw_constants, str):
+                constants = json.loads(raw_constants)
+            elif isinstance(raw_constants, dict):
+                constants = raw_constants
+            else:
+                return None
+
+            # Obtener el model ID de la fase que queremos calcular
+            stage_name = self._config["sleep_stage_extract"]
+            stage_model_id = constants.get(stage_name)
+
+            if stage_model_id is None:
+                return None
+
+            # Calcular minutos totales para esa fase
+            total_minutes = 0
+            for segment in data:
+                if segment.get("model") == stage_model_id:
+                    start = segment.get("start", 0)
+                    stop = segment.get("stop", 0)
+                    total_minutes += (stop - start)
+
+            return total_minutes
+
+    except Exception as e:
+        _LOGGER.warning(
+            f"[{self._config['key']}] sleep_stage_extract error: {e}"
+        )
+        return None
 
     # ============================================================
     # HANDLERS
