@@ -1,0 +1,51 @@
+{
+  "title": "HA Companion",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Настройка датчиков часов",
+        "description": "Введите имя объекта, содержащего датчики часов",
+        "data": {
+          "username": "Например, для 'sensor.amazfit_active_2_nfc_round' введите 'amazfit_active_2_nfc_round'"
+        }
+      }
+    },
+    "error": {
+      "unknown": "Произошла непредвиденная ошибка"
+    },
+    "abort": {
+      "already_configured": "Это устройство уже настроено"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery": { "name": "Батарея" },
+      "steps": { "name": "Шаги" },
+      "steps_target": { "name": "Дневная цель шагов" },
+      "heart_rate": { "name": "Частота сердечных сокращений" },
+      "heart_max": { "name": "Максимальная ЧСС" },
+      "heart_resting": { "name": "ЧСС в покое" },
+      "spo2": { "name": "Кислород в крови" },
+      "calories": { "name": "Калории" },
+      "calories_target": { "name": "Цель по калориям" },
+      "distance": { "name": "Расстояние" },
+      "stand_hours": { "name": "Часы стоя" },
+      "stand_hours_target": { "name": "Цель часов стоя" },
+      "fat_burning": { "name": "Сжигание жира" },
+      "fat_burning_target": { "name": "Цель сжигания жира" },
+      "pai": { "name": "Показатель PAI" },
+      "pai_total": { "name": "PAI Всего" },
+      "temperature": { "name": "Температура тела" },
+      "sleep_status": { "name": "Статус сна" },
+      "sleep_score": { "name": "Оценка сна" },
+      "sleep_total_time": { "name": "Общее время сна" },
+      "sleep_deep_time": { "name": "Время глубокого сна" },
+      "sleep_start_time": { "name": "Время засыпания" },
+      "sleep_end_time": { "name": "Время пробуждения" },
+      "sleep_deep_minutes": { "name": "Глубокий сон" },
+      "sleep_rem_minutes": { "name": "REM-сон" },
+      "sleep_light_minutes": { "name": "Лёгкий сон" },
+      "sleep_wake_minutes": { "name": "Время бодрствования" }
+    }
+  }
+}

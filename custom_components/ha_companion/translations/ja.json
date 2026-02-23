@@ -1,0 +1,51 @@
+{
+  "title": "HA Companion",
+  "config": {
+    "step": {
+      "user": {
+        "title": "ウォッチセンサーの設定",
+        "description": "ウォッチセンサーを含むエンティティ名を入力してください",
+        "data": {
+          "username": "例：'sensor.amazfit_active_2_nfc_round' の場合は 'amazfit_active_2_nfc_round' と入力"
+        }
+      }
+    },
+    "error": {
+      "unknown": "予期しないエラーが発生しました"
+    },
+    "abort": {
+      "already_configured": "このデバイスはすでに設定されています"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery": { "name": "バッテリー" },
+      "steps": { "name": "歩数" },
+      "steps_target": { "name": "1日の歩数目標" },
+      "heart_rate": { "name": "心拍数" },
+      "heart_max": { "name": "最大心拍数" },
+      "heart_resting": { "name": "安静時心拍数" },
+      "spo2": { "name": "血中酸素濃度" },
+      "calories": { "name": "カロリー" },
+      "calories_target": { "name": "カロリー目標" },
+      "distance": { "name": "距離" },
+      "stand_hours": { "name": "立ち時間" },
+      "stand_hours_target": { "name": "立ち時間目標" },
+      "fat_burning": { "name": "脂肪燃焼" },
+      "fat_burning_target": { "name": "脂肪燃焼目標" },
+      "pai": { "name": "PAIスコア" },
+      "pai_total": { "name": "PAI合計" },
+      "temperature": { "name": "体温" },
+      "sleep_status": { "name": "睡眠状態" },
+      "sleep_score": { "name": "睡眠スコア" },
+      "sleep_total_time": { "name": "総睡眠時間" },
+      "sleep_deep_time": { "name": "深い睡眠時間" },
+      "sleep_start_time": { "name": "就寝時間" },
+      "sleep_end_time": { "name": "起床時間" },
+      "sleep_deep_minutes": { "name": "深い睡眠" },
+      "sleep_rem_minutes": { "name": "レム睡眠" },
+      "sleep_light_minutes": { "name": "浅い睡眠" },
+      "sleep_wake_minutes": { "name": "覚醒時間" }
+    }
+  }
+}

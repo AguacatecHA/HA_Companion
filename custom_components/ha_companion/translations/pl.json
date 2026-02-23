@@ -1,0 +1,51 @@
+{
+  "title": "HA Companion",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Konfiguracja czujników zegarka",
+        "description": "Wprowadź nazwę encji zawierającej czujniki zegarka",
+        "data": {
+          "username": "Na przykład dla 'sensor.amazfit_active_2_nfc_round' wprowadź 'amazfit_active_2_nfc_round'"
+        }
+      }
+    },
+    "error": {
+      "unknown": "Wystąpił nieoczekiwany błąd"
+    },
+    "abort": {
+      "already_configured": "To urządzenie jest już skonfigurowane"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery": { "name": "Bateria" },
+      "steps": { "name": "Kroki" },
+      "steps_target": { "name": "Dzienny cel kroków" },
+      "heart_rate": { "name": "Tętno" },
+      "heart_max": { "name": "Maksymalne tętno" },
+      "heart_resting": { "name": "Tętno spoczynkowe" },
+      "spo2": { "name": "Natlenowanie krwi" },
+      "calories": { "name": "Kalorie" },
+      "calories_target": { "name": "Cel kaloryczny" },
+      "distance": { "name": "Dystans" },
+      "stand_hours": { "name": "Godziny stania" },
+      "stand_hours_target": { "name": "Cel godzin stania" },
+      "fat_burning": { "name": "Spalanie tłuszczu" },
+      "fat_burning_target": { "name": "Cel spalania tłuszczu" },
+      "pai": { "name": "Wynik PAI" },
+      "pai_total": { "name": "PAI Łącznie" },
+      "temperature": { "name": "Temperatura ciała" },
+      "sleep_status": { "name": "Status snu" },
+      "sleep_score": { "name": "Wynik snu" },
+      "sleep_total_time": { "name": "Całkowity czas snu" },
+      "sleep_deep_time": { "name": "Czas głębokiego snu" },
+      "sleep_start_time": { "name": "Czas zasypiania" },
+      "sleep_end_time": { "name": "Czas budzenia" },
+      "sleep_deep_minutes": { "name": "Głęboki sen" },
+      "sleep_rem_minutes": { "name": "Sen REM" },
+      "sleep_light_minutes": { "name": "Lekki sen" },
+      "sleep_wake_minutes": { "name": "Czas czuwania" }
+    }
+  }
+}

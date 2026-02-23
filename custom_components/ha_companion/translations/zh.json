@@ -1,0 +1,51 @@
+{
+  "title": "HA Companion",
+  "config": {
+    "step": {
+      "user": {
+        "title": "配置手表传感器",
+        "description": "输入包含手表传感器的实体名称",
+        "data": {
+          "username": "例如，对于'sensor.amazfit_active_2_nfc_round'，请输入'amazfit_active_2_nfc_round'"
+        }
+      }
+    },
+    "error": {
+      "unknown": "发生意外错误"
+    },
+    "abort": {
+      "already_configured": "该设备已配置"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery": { "name": "电池" },
+      "steps": { "name": "步数" },
+      "steps_target": { "name": "每日步数目标" },
+      "heart_rate": { "name": "心率" },
+      "heart_max": { "name": "最大心率" },
+      "heart_resting": { "name": "静息心率" },
+      "spo2": { "name": "血氧" },
+      "calories": { "name": "卡路里" },
+      "calories_target": { "name": "卡路里目标" },
+      "distance": { "name": "距离" },
+      "stand_hours": { "name": "站立时间" },
+      "stand_hours_target": { "name": "站立时间目标" },
+      "fat_burning": { "name": "脂肪燃烧" },
+      "fat_burning_target": { "name": "脂肪燃烧目标" },
+      "pai": { "name": "PAI得分" },
+      "pai_total": { "name": "PAI总计" },
+      "temperature": { "name": "体温" },
+      "sleep_status": { "name": "睡眠状态" },
+      "sleep_score": { "name": "睡眠评分" },
+      "sleep_total_time": { "name": "总睡眠时间" },
+      "sleep_deep_time": { "name": "深度睡眠时间" },
+      "sleep_start_time": { "name": "入睡时间" },
+      "sleep_end_time": { "name": "起床时间" },
+      "sleep_deep_minutes": { "name": "深度睡眠" },
+      "sleep_rem_minutes": { "name": "快速眼动睡眠" },
+      "sleep_light_minutes": { "name": "浅度睡眠" },
+      "sleep_wake_minutes": { "name": "清醒时间" }
+    }
+  }
+}

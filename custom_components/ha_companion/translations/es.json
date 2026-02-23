@@ -1,0 +1,51 @@
+{
+  "title": "HA Companion",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configurar Sensores del Reloj",
+        "description": "Introduce el nombre de la entidad que contiene los sensores del reloj",
+        "data": {
+          "username": "Ejemplo, para 'sensor.amazfit_active_2_nfc_round' introduce 'amazfit_active_2_nfc_round'"
+        }
+      }
+    },
+    "error": {
+      "unknown": "Se produjo un error inesperado"
+    },
+    "abort": {
+      "already_configured": "Este dispositivo ya está configurado"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery": { "name": "Batería" },
+      "steps": { "name": "Pasos" },
+      "steps_target": { "name": "Objetivo de Pasos Diarios" },
+      "heart_rate": { "name": "Frecuencia Cardíaca" },
+      "heart_max": { "name": "Frecuencia Cardíaca Máxima" },
+      "heart_resting": { "name": "Frecuencia Cardíaca en Reposo" },
+      "spo2": { "name": "Oxígeno en Sangre" },
+      "calories": { "name": "Calorías" },
+      "calories_target": { "name": "Objetivo de Calorías" },
+      "distance": { "name": "Distancia" },
+      "stand_hours": { "name": "Horas de Pie" },
+      "stand_hours_target": { "name": "Objetivo Horas de Pie" },
+      "fat_burning": { "name": "Quema de Grasa" },
+      "fat_burning_target": { "name": "Objetivo Quema de Grasa" },
+      "pai": { "name": "Puntuación PAI" },
+      "pai_total": { "name": "PAI Total" },
+      "temperature": { "name": "Temperatura Corporal" },
+      "sleep_status": { "name": "Estado del Sueño" },
+      "sleep_score": { "name": "Puntuación del Sueño" },
+      "sleep_total_time": { "name": "Tiempo Total de Sueño" },
+      "sleep_deep_time": { "name": "Tiempo de Sueño Profundo" },
+      "sleep_start_time": { "name": "Hora de Dormir" },
+      "sleep_end_time": { "name": "Hora de Despertar" },
+      "sleep_deep_minutes": { "name": "Sueño Profundo" },
+      "sleep_rem_minutes": { "name": "Sueño REM" },
+      "sleep_light_minutes": { "name": "Sueño Ligero" },
+      "sleep_wake_minutes": { "name": "Tiempo Despierto" }
+    }
+  }
+}

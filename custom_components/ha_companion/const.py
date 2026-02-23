@@ -6,7 +6,7 @@ DOMAIN = "ha_companion"
 SENSORS = [
     {
         "key": "battery",
-        "name": "Battery",
+        "translation_key": "Battery",
         "attribute": "battery_state",
         "unit": "%",
         "device_class": "battery",
@@ -15,7 +15,7 @@ SENSORS = [
     },
     {
         "key": "steps",
-        "name": "Steps",
+        "translation_key": "Steps",
         "attribute": "steps_state",
         "unit": "steps",
         "icon": "mdi:walk",
@@ -23,7 +23,7 @@ SENSORS = [
     },
     {
         "key": "steps_target",
-        "name": "Steps Daily Target",
+        "translation_key": "Steps Daily Target",
         "attribute": "steps_daily_target",
         "unit": "steps",
         "icon": "mdi:flag-checkered",
@@ -31,7 +31,7 @@ SENSORS = [
     },    
     {
         "key": "heart_rate",
-        "name": "Heart Rate",
+        "translation_key": "Heart Rate",
         "attribute": "heart_state",
         "unit": "bpm",
         "device_class": "heart_rate",
@@ -40,7 +40,7 @@ SENSORS = [
     },
     {
         "key": "heart_max",
-        "name": "Heart Rate Max",
+        "translation_key": "Heart Rate Max",
         "attribute": "heart_daily_summary",
         "unit": "bpm",
         "device_class": "heart_rate",
@@ -50,7 +50,7 @@ SENSORS = [
     },
     {
         "key": "heart_resting",
-        "name": "Resting Heart Rate",
+        "translation_key": "Resting Heart Rate",
         "attribute": "heart_resting",
         "unit": "bpm",
         "device_class": "heart_rate",
@@ -59,7 +59,7 @@ SENSORS = [
     },    
     {
         "key": "spo2",
-        "name": "Blood Oxygen",
+        "translation_key": "Blood Oxygen",
         "attribute": "spo2_state",
         "unit": "%",
         "icon": "mdi:lungs",
@@ -68,7 +68,7 @@ SENSORS = [
     },
     {
         "key": "calories",
-        "name": "Calories",
+        "translation_key": "Calories",
         "attribute": "calorie_state",
         "unit": "kcal",
         "device_class": "energy",
@@ -77,7 +77,7 @@ SENSORS = [
     },
     {
         "key": "calories_target",
-        "name": "Calories Target",
+        "translation_key": "Calories Target",
         "attribute": "calories_burnt_target",
         "unit": "kcal",
         "device_class": "energy",
@@ -86,7 +86,7 @@ SENSORS = [
     },    
     {
         "key": "distance",
-        "name": "Distance",
+        "translation_key": "Distance",
         "attribute": "distance_state",
         "unit": "m",
         "device_class": "distance",
@@ -95,7 +95,7 @@ SENSORS = [
     },
     {
         "key": "stand_hours",
-        "name": "Stand Hours",
+        "translation_key": "Stand Hours",
         "attribute": "stand_state",
         "unit": "h",
         "icon": "mdi:human",
@@ -103,7 +103,7 @@ SENSORS = [
     },
     {
         "key": "stand_hours_target",
-        "name": "Stand Hours Target",
+        "translation_key": "Stand Hours Target",
         "attribute": "stand_hours_target",
         "unit": "h",
         "icon": "mdi:human-handsup",
@@ -111,7 +111,7 @@ SENSORS = [
     },    
     {
         "key": "fat_burning",
-        "name": "Fat Burning",
+        "translation_key": "Fat Burning",
         "attribute": "fat_burning_state",
         "unit": "min",
         "icon": "mdi:fire-circle",
@@ -119,7 +119,7 @@ SENSORS = [
     },
     {
         "key": "fat_burning_target",
-        "name": "Fat Burning Target",
+        "translation_key": "Fat Burning Target",
         "attribute": "fat_burning_minutes_target",
         "unit": "min",
         "icon": "mdi:fire-circle",
@@ -127,7 +127,7 @@ SENSORS = [
     },    
     {
         "key": "pai",
-        "name": "PAI Score",
+        "translation_key": "PAI Score",
         "attribute": "pai_state",
         "unit": "PAI",
         "icon": "mdi:chart-line",
@@ -135,7 +135,7 @@ SENSORS = [
     },
     {
         "key": "pai_total",
-        "name": "PAI Total",
+        "translation_key": "PAI Total",
         "attribute": "pai_total",
         "unit": "PAI",
         "icon": "mdi:chart-line",
@@ -143,7 +143,7 @@ SENSORS = [
     },    
     {
         "key": "temperature",
-        "name": "Body Temperature",
+        "translation_key": "Body Temperature",
         "attribute": "temperature_state",
         "unit": "°C",
         "device_class": "temperature",
@@ -154,13 +154,13 @@ SENSORS = [
     },
     {
         "key": "sleep_status",
-        "name": "Sleep Status",
+        "translation_key": "Sleep Status",
         "attribute": "sleep_state",
         "icon": "mdi:sleep"
     },
     {
         "key": "sleep_score",
-        "name": "Sleep Score",
+        "translation_key": "Sleep Score",
         "attribute": "sleep_info",
         "unit": "points",
         "icon": "mdi:sleep",
@@ -169,7 +169,7 @@ SENSORS = [
     },
     {
         "key": "sleep_total_time",
-        "name": "Sleep Total Time", 
+        "translation_key": "Sleep Total Time", 
         "attribute": "sleep_info",
         "unit": "min",
         "device_class": "duration",
@@ -179,7 +179,7 @@ SENSORS = [
     },
     {
         "key": "sleep_deep_time",
-        "name": "Sleep Deep Time",
+        "translation_key": "Sleep Deep Time",
         "attribute": "sleep_info",
         "unit": "min",
         "device_class": "duration",
@@ -189,17 +189,59 @@ SENSORS = [
     },
     {
         "key": "sleep_start_time",
-        "name": "Sleep Start Time",
+        "translation_key": "Sleep Start Time",
         "attribute": "sleep_info",
         "icon": "mdi:weather-night",
-        "json_extract": "startTime"
+        "json_extract": "startTime",
+        "time_convert": True   
     },
     {
         "key": "sleep_end_time",
-        "name": "Sleep End Time",
+        "translation_key": "Sleep End Time",
         "attribute": "sleep_info",
         "icon": "mdi:weather-sunny",
-        "json_extract": "endTime"
+        "json_extract": "endTime",
+        "time_convert": True   
+    },
+    {
+        "key": "sleep_deep_minutes",
+        "translation_key": "Sleep Deep Stage",
+        "attribute": "sleep_stage_data",
+        "unit": "min",
+        "device_class": "duration",
+        "icon": "mdi:sleep",
+        "state_class": "measurement",
+        "sleep_stage_extract": "DEEP_STAGE"
+    },
+    {
+        "key": "sleep_rem_minutes",
+        "translation_key": "Sleep REM Stage",
+        "attribute": "sleep_stage_data",
+        "unit": "min",
+        "device_class": "duration",
+        "icon": "mdi:brain",
+        "state_class": "measurement",
+        "sleep_stage_extract": "REM_STAGE"
+    },
+    {
+        "key": "sleep_light_minutes",
+        "translation_key": "Sleep Light Stage",
+        "attribute": "sleep_stage_data",
+        "unit": "min",
+        "device_class": "duration",
+        "icon": "mdi:weather-night-partly-cloudy",
+        "state_class": "measurement",
+        "sleep_stage_extract": "LIGHT_STAGE"
+    },
+    {
+        "key": "sleep_wake_minutes",
+        "translation_key": "Sleep Wake Stage",
+        "attribute": "sleep_stage_data",
+        "unit": "min",
+        "device_class": "duration",
+        "icon": "mdi:eye",
+        "state_class": "measurement",
+        "sleep_stage_extract": "WAKE_STAGE"
     },
 
 ]

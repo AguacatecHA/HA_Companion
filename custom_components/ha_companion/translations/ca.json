@@ -1,0 +1,51 @@
+{
+  "title": "HA Companion",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configurar els sensors del rellotge",
+        "description": "Introdueix el nom de l'entitat que conté els sensors del rellotge",
+        "data": {
+          "username": "Per exemple, per a 'sensor.amazfit_active_2_nfc_round' introdueix 'amazfit_active_2_nfc_round'"
+        }
+      }
+    },
+    "error": {
+      "unknown": "S'ha produït un error inesperat"
+    },
+    "abort": {
+      "already_configured": "Aquest dispositiu ja està configurat"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery": { "name": "Bateria" },
+      "steps": { "name": "Passos" },
+      "steps_target": { "name": "Objectiu de passos diaris" },
+      "heart_rate": { "name": "Freqüència cardíaca" },
+      "heart_max": { "name": "Freqüència cardíaca màxima" },
+      "heart_resting": { "name": "Freqüència cardíaca en repòs" },
+      "spo2": { "name": "Oxigen en sang" },
+      "calories": { "name": "Calories" },
+      "calories_target": { "name": "Objectiu de calories" },
+      "distance": { "name": "Distància" },
+      "stand_hours": { "name": "Hores de peu" },
+      "stand_hours_target": { "name": "Objectiu hores de peu" },
+      "fat_burning": { "name": "Crema de greix" },
+      "fat_burning_target": { "name": "Objectiu crema de greix" },
+      "pai": { "name": "Puntuació PAI" },
+      "pai_total": { "name": "PAI Total" },
+      "temperature": { "name": "Temperatura corporal" },
+      "sleep_status": { "name": "Estat del son" },
+      "sleep_score": { "name": "Puntuació del son" },
+      "sleep_total_time": { "name": "Temps total de son" },
+      "sleep_deep_time": { "name": "Temps de son profund" },
+      "sleep_start_time": { "name": "Hora d'adormir-se" },
+      "sleep_end_time": { "name": "Hora de despertar-se" },
+      "sleep_deep_minutes": { "name": "Son profund" },
+      "sleep_rem_minutes": { "name": "Son REM" },
+      "sleep_light_minutes": { "name": "Son lleuger" },
+      "sleep_wake_minutes": { "name": "Temps despert" }
+    }
+  }
+}

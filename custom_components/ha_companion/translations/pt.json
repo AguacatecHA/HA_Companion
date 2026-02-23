@@ -1,0 +1,51 @@
+{
+  "title": "HA Companion",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configurar sensores do relógio",
+        "description": "Insira o nome da entidade que contém os sensores do relógio",
+        "data": {
+          "username": "Por exemplo, para 'sensor.amazfit_active_2_nfc_round' insira 'amazfit_active_2_nfc_round'"
+        }
+      }
+    },
+    "error": {
+      "unknown": "Ocorreu um erro inesperado"
+    },
+    "abort": {
+      "already_configured": "Este dispositivo já está configurado"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery": { "name": "Bateria" },
+      "steps": { "name": "Passos" },
+      "steps_target": { "name": "Meta diária de passos" },
+      "heart_rate": { "name": "Frequência cardíaca" },
+      "heart_max": { "name": "Frequência cardíaca máxima" },
+      "heart_resting": { "name": "Frequência cardíaca em repouso" },
+      "spo2": { "name": "Oxigênio no sangue" },
+      "calories": { "name": "Calorias" },
+      "calories_target": { "name": "Meta de calorias" },
+      "distance": { "name": "Distância" },
+      "stand_hours": { "name": "Horas em pé" },
+      "stand_hours_target": { "name": "Meta de horas em pé" },
+      "fat_burning": { "name": "Queima de gordura" },
+      "fat_burning_target": { "name": "Meta de queima de gordura" },
+      "pai": { "name": "Pontuação PAI" },
+      "pai_total": { "name": "PAI Total" },
+      "temperature": { "name": "Temperatura corporal" },
+      "sleep_status": { "name": "Estado do sono" },
+      "sleep_score": { "name": "Pontuação do sono" },
+      "sleep_total_time": { "name": "Tempo total de sono" },
+      "sleep_deep_time": { "name": "Tempo de sono profundo" },
+      "sleep_start_time": { "name": "Hora de dormir" },
+      "sleep_end_time": { "name": "Hora de acordar" },
+      "sleep_deep_minutes": { "name": "Sono profundo" },
+      "sleep_rem_minutes": { "name": "Sono REM" },
+      "sleep_light_minutes": { "name": "Sono leve" },
+      "sleep_wake_minutes": { "name": "Tempo acordado" }
+    }
+  }
+}

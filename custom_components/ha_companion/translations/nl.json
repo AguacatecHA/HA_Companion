@@ -1,0 +1,51 @@
+{
+  "title": "HA Companion",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Horlogesensoren configureren",
+        "description": "Voer de entiteitsnaam in die de horlogesensoren bevat",
+        "data": {
+          "username": "Bijvoorbeeld voor 'sensor.amazfit_active_2_nfc_round' voer in 'amazfit_active_2_nfc_round'"
+        }
+      }
+    },
+    "error": {
+      "unknown": "Er is een onverwachte fout opgetreden"
+    },
+    "abort": {
+      "already_configured": "Dit apparaat is al geconfigureerd"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery": { "name": "Batterij" },
+      "steps": { "name": "Stappen" },
+      "steps_target": { "name": "Dagelijks stappendoel" },
+      "heart_rate": { "name": "Hartslag" },
+      "heart_max": { "name": "Maximale hartslag" },
+      "heart_resting": { "name": "Rusthartslag" },
+      "spo2": { "name": "Bloedzuurstof" },
+      "calories": { "name": "Calorieën" },
+      "calories_target": { "name": "Calorieëndoel" },
+      "distance": { "name": "Afstand" },
+      "stand_hours": { "name": "Staande uren" },
+      "stand_hours_target": { "name": "Doel staande uren" },
+      "fat_burning": { "name": "Vetverbranding" },
+      "fat_burning_target": { "name": "Doel vetverbranding" },
+      "pai": { "name": "PAI-score" },
+      "pai_total": { "name": "PAI Totaal" },
+      "temperature": { "name": "Lichaamstemperatuur" },
+      "sleep_status": { "name": "Slaapstatus" },
+      "sleep_score": { "name": "Slaapscore" },
+      "sleep_total_time": { "name": "Totale slaaptijd" },
+      "sleep_deep_time": { "name": "Diepe slaaptijd" },
+      "sleep_start_time": { "name": "Slaaptijd" },
+      "sleep_end_time": { "name": "Wektijd" },
+      "sleep_deep_minutes": { "name": "Diepe slaap" },
+      "sleep_rem_minutes": { "name": "REM-slaap" },
+      "sleep_light_minutes": { "name": "Lichte slaap" },
+      "sleep_wake_minutes": { "name": "Waktijd" }
+    }
+  }
+}
