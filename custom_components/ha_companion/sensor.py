@@ -175,8 +175,8 @@ class WatchSensor(SensorEntity):
         elif self._config.get("sleep_stage_extract"):
             return self._extract_sleep_stage(attr_value)
             # --- Valor directo (número/string) ---
-            else:
-                return attr_value
+        else:
+            return attr_value
 
     def _extract_sleep_stage(self, attr_value):
         """Calcula minutos totales de cada fase de sueño."""
