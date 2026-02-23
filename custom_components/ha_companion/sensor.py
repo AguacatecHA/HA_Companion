@@ -50,7 +50,7 @@ class WatchSensor(SensorEntity):
         self._config = sensor_config
 
         self._attr_has_entity_name = True
-        self._attr_translation_key = sensor_config.get("translation_key")        
+        self._attr_translation_key = sensor_config.get("key")      
         #self._attr_name = sensor_config['name']
         self._attr_unique_id = f"{entry_id}_{sensor_config['key']}"
         self._attr_icon = sensor_config.get("icon")
