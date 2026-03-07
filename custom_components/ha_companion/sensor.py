@@ -8,10 +8,13 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.const import EntityCategory
 
-from .const import DOMAIN, SENSORS
+from .const import DOMAIN, SENSORS, SPORT_TYPES
 
 _LOGGER = logging.getLogger(__name__)
+
+
 
 
 async def async_setup_entry(
@@ -48,7 +51,7 @@ class WatchSensor(SensorEntity):
         self._username = username
         self._master_sensor_id = master_sensor_id
         self._config = sensor_config
-
+        self._attr_entity_state_translation = True 
         self._attr_has_entity_name = True
         self._attr_translation_key = sensor_config.get("key")      
         #self._attr_name = sensor_config['name']
@@ -59,7 +62,8 @@ class WatchSensor(SensorEntity):
         self._attr_state_class = sensor_config.get("state_class")
         self._attr_native_value = None
         self._attr_available = False
-
+        self._attr_entity_category = EntityCategory(sensor_config["entity_category"]) \
+            if sensor_config.get("entity_category") else None
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, f"{username}_watch")},
             name=f"{username.capitalize()} Amazfit Watch",
@@ -109,6 +113,7 @@ class WatchSensor(SensorEntity):
                     hours = (result // 60) % 24
                     minutes = result % 60
                     result = f"{hours:02d}:{minutes:02d}"
+
 
                 return result
 
@@ -235,6 +240,32 @@ class WatchSensor(SensorEntity):
     # ============================================================
     # HANDLERS
     # ============================================================
+    def _wear_to_text(self, raw_value):
+        """Convert 0-3 to friendly text."""
+        if raw_value is None:
+            return None
+        
+        try:
+            ivalue = int(raw_value)
+            mapping = {
+                0: "not_wearing",
+                1: "is_wearing", 
+                2: "in_motion",
+                3: "not_sure"
+            }
+            return mapping.get(ivalue, "Unknown")
+        except (TypeError, ValueError):
+            return "Unknown"
+
+    def _sport_type_to_text(self, raw_value):
+        """Convert sport type code to friendly text."""
+        if raw_value is None:
+            return None
+        try:
+            code = int(raw_value)
+            return SPORT_TYPES.get(code, f"Unknown ({code})")
+        except (TypeError, ValueError):
+            return str(raw_value)
 
     @callback
     def _handle_master_update(self, event) -> None:
@@ -251,7 +282,12 @@ class WatchSensor(SensorEntity):
             self.async_write_ha_state()
             return
 
-        self._attr_native_value = self._extract_value(attr_value)
+        raw_value = self._extract_value(attr_value)
+        if self._config.get("key") == "wear":
+            raw_value = self._wear_to_text(raw_value)
+        elif self._config.get("key") == "workout_last_sport_type":  # ← añadir
+            raw_value = self._sport_type_to_text(raw_value)            
+        self._attr_native_value = raw_value
         self._attr_available = self._attr_native_value is not None
         self.async_write_ha_state()
 
@@ -263,5 +299,10 @@ class WatchSensor(SensorEntity):
         if master_state:
             attr_value = master_state.attributes.get(self._config["attribute"])
             if attr_value is not None:
-                self._attr_native_value = self._extract_value(attr_value)
+                raw_value = self._extract_value(attr_value)
+                if self._config.get("key") == "wear":
+                    raw_value = self._wear_to_text(raw_value)
+                elif self._config.get("key") == "workout_last_sport_type":  # ← añadir
+                    raw_value = self._sport_type_to_text(raw_value)                    
+                self._attr_native_value = raw_value
                 self._attr_available = self._attr_native_value is not None

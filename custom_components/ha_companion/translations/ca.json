@@ -1,51 +1,182 @@
 {
-  "title": "HA Companion",
-  "config": {
-    "step": {
-      "user": {
-        "title": "Configurar els sensors del rellotge",
-        "description": "Introdueix el nom de l'entitat que conté els sensors del rellotge",
-        "data": {
-          "username": "Per exemple, per a 'sensor.amazfit_active_2_nfc_round' introdueix 'amazfit_active_2_nfc_round'"
+    "title": "HA Companion",
+    "config": {
+        "step": {
+            "user": {
+                "title": "Configurar els sensors del rellotge",
+                "description": "Introdueix el nom de l'entitat que conté els sensors del rellotge",
+                "data": {
+                    "username": "Per exemple, per a 'sensor.amazfit_active_2_nfc_round' introdueix 'amazfit_active_2_nfc_round'"
+                }
+            }
+        },
+        "error": {
+            "unknown": "S'ha produït un error inesperat"
+        },
+        "abort": {
+            "already_configured": "Aquest dispositiu ja està configurat"
         }
-      }
     },
-    "error": {
-      "unknown": "S'ha produït un error inesperat"
-    },
-    "abort": {
-      "already_configured": "Aquest dispositiu ja està configurat"
+    "entity": {
+        "sensor": {
+            "battery": {
+                "name": "Bateria"
+            },
+            "steps": {
+                "name": "Passos"
+            },
+            "steps_target": {
+                "name": "Objectiu de passos diaris"
+            },
+            "heart_rate": {
+                "name": "Freqüència cardíaca"
+            },
+            "heart_max": {
+                "name": "Freqüència cardíaca màxima"
+            },
+            "heart_resting": {
+                "name": "Freqüència cardíaca en repòs"
+            },
+            "spo2": {
+                "name": "Oxigen en sang"
+            },
+            "calories": {
+                "name": "Calories"
+            },
+            "calories_target": {
+                "name": "Objectiu de calories"
+            },
+            "distance": {
+                "name": "Distància"
+            },
+            "stand_hours": {
+                "name": "Hores de peu"
+            },
+            "stand_hours_target": {
+                "name": "Objectiu hores de peu"
+            },
+            "fat_burning": {
+                "name": "Crema de greix"
+            },
+            "fat_burning_target": {
+                "name": "Objectiu crema de greix"
+            },
+            "pai": {
+                "name": "Puntuació PAI"
+            },
+            "pai_total": {
+                "name": "PAI Total"
+            },
+            "temperature": {
+                "name": "Temperatura corporal"
+            },
+            "sleep_status": {
+                "name": "Estat del son"
+            },
+            "sleep_score": {
+                "name": "Puntuació del son"
+            },
+            "sleep_total_time": {
+                "name": "Temps total de son"
+            },
+            "sleep_deep_time": {
+                "name": "Temps de son profund"
+            },
+            "sleep_start_time": {
+                "name": "Hora d'adormir-se"
+            },
+            "sleep_end_time": {
+                "name": "Hora de despertar-se"
+            },
+            "sleep_deep_minutes": {
+                "name": "Son profund"
+            },
+            "sleep_rem_minutes": {
+                "name": "Son REM"
+            },
+            "sleep_light_minutes": {
+                "name": "Son lleuger"
+            },
+            "sleep_wake_minutes": {
+                "name": "Temps despert"
+            },
+            "stress": {
+                "name": "Estrès"
+            },
+            "user_age": {
+                "name": "Edat"
+            },
+            "user_height": {
+                "name": "Alçada"
+            },
+            "user_weight": {
+                "name": "Pes"
+            },
+            "user_gender": {
+                "name": "Gènere"
+            },
+            "user_region": {
+                "name": "Regió"
+            },
+            "workout_last_date": {
+                "name": "Data Darrer Entrenament"
+            },
+            "workout_last_duration": {
+                "name": "Durada Darrer Entrenament"
+            },
+            "workout_last_sport_type": {
+                "name": "Tipus Darrer Esport"
+            },
+            "workout_training_load": {
+                "name": "Càrrega d'Entrenament"
+            },
+            "workout_vo2_max": {
+                "name": "VO2 Màx"
+            },
+            "workout_count": {
+                "name": "Nombre d'Entrenaments"
+            },
+            "altitude_state": {
+                "name": "Altitud"
+            },
+            "air_pressure_state": {
+                "name": "Pressió atmosfèrica"
+            },
+            "os_version": {
+                "name": "Versió del Sistema"
+            },
+            "firmware_version": {
+                "name": "Versió del Firmware"
+            },
+            "min_api": {
+                "name": "API Mínima"
+            },
+            "wear": {
+                "name": "Estat del rellotge",
+                "state": {
+                    "not_wearing": "No el porta",
+                    "is_wearing": "Portant",
+                    "in_motion": "En moviment",
+                    "not_sure": "Indeterminat"
+                }
+            }
+        },
+        "binary_sensor": {
+            "system_mode_dnd": {
+                "name": "No Molestar"
+            },
+            "system_mode_sleep": {
+                "name": "Mode Son"
+            },
+            "system_mode_theater": {
+                "name": "Mode Teatre"
+            },
+            "system_mode_power_saving": {
+                "name": "Estalvi d'Energia"
+            },
+            "system_mode_ultra_power_saving": {
+                "name": "Ultra Estalvi d'Energia"
+            }
+        }
     }
-  },
-  "entity": {
-    "sensor": {
-      "battery": { "name": "Bateria" },
-      "steps": { "name": "Passos" },
-      "steps_target": { "name": "Objectiu de passos diaris" },
-      "heart_rate": { "name": "Freqüència cardíaca" },
-      "heart_max": { "name": "Freqüència cardíaca màxima" },
-      "heart_resting": { "name": "Freqüència cardíaca en repòs" },
-      "spo2": { "name": "Oxigen en sang" },
-      "calories": { "name": "Calories" },
-      "calories_target": { "name": "Objectiu de calories" },
-      "distance": { "name": "Distància" },
-      "stand_hours": { "name": "Hores de peu" },
-      "stand_hours_target": { "name": "Objectiu hores de peu" },
-      "fat_burning": { "name": "Crema de greix" },
-      "fat_burning_target": { "name": "Objectiu crema de greix" },
-      "pai": { "name": "Puntuació PAI" },
-      "pai_total": { "name": "PAI Total" },
-      "temperature": { "name": "Temperatura corporal" },
-      "sleep_status": { "name": "Estat del son" },
-      "sleep_score": { "name": "Puntuació del son" },
-      "sleep_total_time": { "name": "Temps total de son" },
-      "sleep_deep_time": { "name": "Temps de son profund" },
-      "sleep_start_time": { "name": "Hora d'adormir-se" },
-      "sleep_end_time": { "name": "Hora de despertar-se" },
-      "sleep_deep_minutes": { "name": "Son profund" },
-      "sleep_rem_minutes": { "name": "Son REM" },
-      "sleep_light_minutes": { "name": "Son lleuger" },
-      "sleep_wake_minutes": { "name": "Temps despert" }
-    }
-  }
 }

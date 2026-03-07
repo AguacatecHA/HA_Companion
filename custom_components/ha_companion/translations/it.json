@@ -1,51 +1,182 @@
 {
-  "title": "HA Companion",
-  "config": {
-    "step": {
-      "user": {
-        "title": "Configura i sensori dell'orologio",
-        "description": "Inserisci il nome dell'entità che contiene i sensori dell'orologio",
-        "data": {
-          "username": "Ad esempio, per 'sensor.amazfit_active_2_nfc_round' inserisci 'amazfit_active_2_nfc_round'"
+    "title": "HA Companion",
+    "config": {
+        "step": {
+            "user": {
+                "title": "Configura i sensori dell'orologio",
+                "description": "Inserisci il nome dell'entità che contiene i sensori dell'orologio",
+                "data": {
+                    "username": "Ad esempio, per 'sensor.amazfit_active_2_nfc_round' inserisci 'amazfit_active_2_nfc_round'"
+                }
+            }
+        },
+        "error": {
+            "unknown": "Si è verificato un errore imprevisto"
+        },
+        "abort": {
+            "already_configured": "Questo dispositivo è già configurato"
         }
-      }
     },
-    "error": {
-      "unknown": "Si è verificato un errore imprevisto"
-    },
-    "abort": {
-      "already_configured": "Questo dispositivo è già configurato"
+    "entity": {
+        "sensor": {
+            "battery": {
+                "name": "Batteria"
+            },
+            "steps": {
+                "name": "Passi"
+            },
+            "steps_target": {
+                "name": "Obiettivo passi giornalieri"
+            },
+            "heart_rate": {
+                "name": "Frequenza cardiaca"
+            },
+            "heart_max": {
+                "name": "Frequenza cardiaca massima"
+            },
+            "heart_resting": {
+                "name": "Frequenza cardiaca a riposo"
+            },
+            "spo2": {
+                "name": "Ossigeno nel sangue"
+            },
+            "calories": {
+                "name": "Calorie"
+            },
+            "calories_target": {
+                "name": "Obiettivo calorie"
+            },
+            "distance": {
+                "name": "Distanza"
+            },
+            "stand_hours": {
+                "name": "Ore in piedi"
+            },
+            "stand_hours_target": {
+                "name": "Obiettivo ore in piedi"
+            },
+            "fat_burning": {
+                "name": "Bruciagrassi"
+            },
+            "fat_burning_target": {
+                "name": "Obiettivo bruciagrassi"
+            },
+            "pai": {
+                "name": "Punteggio PAI"
+            },
+            "pai_total": {
+                "name": "PAI Totale"
+            },
+            "temperature": {
+                "name": "Temperatura corporea"
+            },
+            "sleep_status": {
+                "name": "Stato del sonno"
+            },
+            "sleep_score": {
+                "name": "Punteggio del sonno"
+            },
+            "sleep_total_time": {
+                "name": "Durata totale del sonno"
+            },
+            "sleep_deep_time": {
+                "name": "Durata sonno profondo"
+            },
+            "sleep_start_time": {
+                "name": "Ora di addormentamento"
+            },
+            "sleep_end_time": {
+                "name": "Ora di sveglia"
+            },
+            "sleep_deep_minutes": {
+                "name": "Sonno profondo"
+            },
+            "sleep_rem_minutes": {
+                "name": "Sonno REM"
+            },
+            "sleep_light_minutes": {
+                "name": "Sonno leggero"
+            },
+            "sleep_wake_minutes": {
+                "name": "Tempo sveglio"
+            },
+            "stress": {
+                "name": "Stress"
+            },
+            "user_age": {
+                "name": "Età"
+            },
+            "user_height": {
+                "name": "Altezza"
+            },
+            "user_weight": {
+                "name": "Peso"
+            },
+            "user_gender": {
+                "name": "Genere"
+            },
+            "user_region": {
+                "name": "Regione"
+            },
+            "workout_last_date": {
+                "name": "Data Ultimo Allenamento"
+            },
+            "workout_last_duration": {
+                "name": "Durata Ultimo Allenamento"
+            },
+            "workout_last_sport_type": {
+                "name": "Ultimo Tipo di Sport"
+            },
+            "workout_training_load": {
+                "name": "Carico di Allenamento"
+            },
+            "workout_vo2_max": {
+                "name": "VO2 Max"
+            },
+            "workout_count": {
+                "name": "Numero di Allenamenti"
+            },
+            "altitude_state": {
+                "name": "Altitudine"
+            },
+            "air_pressure_state": {
+                "name": "Pressione atmosferica"
+            },
+            "os_version": {
+                "name": "Versione OS"
+            },
+            "firmware_version": {
+                "name": "Versione Firmware"
+            },
+            "min_api": {
+                "name": "API minima"
+            },
+            "wear": {
+                "name": "Stato indosso",
+                "state": {
+                    "not_wearing": "Non indossato",
+                    "is_wearing": "Indossato",
+                    "in_motion": "In movimento",
+                    "not_sure": "Non sicuro"
+                }
+            }
+        },
+        "binary_sensor": {
+            "system_mode_dnd": {
+                "name": "Non disturbare"
+            },
+            "system_mode_sleep": {
+                "name": "Modalità Sonno"
+            },
+            "system_mode_theater": {
+                "name": "Modalità Teatro"
+            },
+            "system_mode_power_saving": {
+                "name": "Risparmio energetico"
+            },
+            "system_mode_ultra_power_saving": {
+                "name": "Ultra risparmio energetico"
+            }
+        }
     }
-  },
-  "entity": {
-    "sensor": {
-      "battery": { "name": "Batteria" },
-      "steps": { "name": "Passi" },
-      "steps_target": { "name": "Obiettivo passi giornalieri" },
-      "heart_rate": { "name": "Frequenza cardiaca" },
-      "heart_max": { "name": "Frequenza cardiaca massima" },
-      "heart_resting": { "name": "Frequenza cardiaca a riposo" },
-      "spo2": { "name": "Ossigeno nel sangue" },
-      "calories": { "name": "Calorie" },
-      "calories_target": { "name": "Obiettivo calorie" },
-      "distance": { "name": "Distanza" },
-      "stand_hours": { "name": "Ore in piedi" },
-      "stand_hours_target": { "name": "Obiettivo ore in piedi" },
-      "fat_burning": { "name": "Bruciagrassi" },
-      "fat_burning_target": { "name": "Obiettivo bruciagrassi" },
-      "pai": { "name": "Punteggio PAI" },
-      "pai_total": { "name": "PAI Totale" },
-      "temperature": { "name": "Temperatura corporea" },
-      "sleep_status": { "name": "Stato del sonno" },
-      "sleep_score": { "name": "Punteggio del sonno" },
-      "sleep_total_time": { "name": "Durata totale del sonno" },
-      "sleep_deep_time": { "name": "Durata sonno profondo" },
-      "sleep_start_time": { "name": "Ora di addormentamento" },
-      "sleep_end_time": { "name": "Ora di sveglia" },
-      "sleep_deep_minutes": { "name": "Sonno profondo" },
-      "sleep_rem_minutes": { "name": "Sonno REM" },
-      "sleep_light_minutes": { "name": "Sonno leggero" },
-      "sleep_wake_minutes": { "name": "Tempo sveglio" }
-    }
-  }
 }

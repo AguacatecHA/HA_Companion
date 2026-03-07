@@ -16,37 +16,167 @@
     "abort": {
       "already_configured": "This device is already configured"
     }
-    
   },
   "entity": {
     "sensor": {
-      "battery": { "name": "Battery" },
-      "steps": { "name": "Steps" },
-      "steps_target": { "name": "Daily Steps Target" },
-      "heart_rate": { "name": "Heart Rate" },
-      "heart_max": { "name": "Max Heart Rate" },
-      "heart_resting": { "name": "Resting Heart Rate" },
-      "spo2": { "name": "Blood Oxygen" },
-      "calories": { "name": "Calories" },
-      "calories_target": { "name": "Calories Target" },
-      "distance": { "name": "Distance" },
-      "stand_hours": { "name": "Stand Hours" },
-      "stand_hours_target": { "name": "Stand Hours Target" },
-      "fat_burning": { "name": "Fat Burning" },
-      "fat_burning_target": { "name": "Fat Burning Target" },
-      "pai": { "name": "PAI Score" },
-      "pai_total": { "name": "PAI Total" },
-      "temperature": { "name": "Body Temperature" },
-      "sleep_status": { "name": "Sleep Status" },
-      "sleep_score": { "name": "Sleep Score" },
-      "sleep_total_time": { "name": "Sleep Total Time" },
-      "sleep_deep_time": { "name": "Deep Sleep Time" },
-      "sleep_start_time": { "name": "Sleep Start Time" },
-      "sleep_end_time": { "name": "Wake Up Time" },
-      "sleep_deep_minutes": { "name": "Deep Sleep" },
-      "sleep_rem_minutes": { "name": "REM Sleep" },
-      "sleep_light_minutes": { "name": "Light Sleep" },
-      "sleep_wake_minutes": { "name": "Awake Time" }
+      "battery": {
+        "name": "Battery"
+      },
+      "steps": {
+        "name": "Steps"
+      },
+      "steps_target": {
+        "name": "Daily Steps Target"
+      },
+      "heart_rate": {
+        "name": "Heart Rate"
+      },
+      "heart_max": {
+        "name": "Max Heart Rate"
+      },
+      "heart_resting": {
+        "name": "Resting Heart Rate"
+      },
+      "spo2": {
+        "name": "Blood Oxygen"
+      },
+      "calories": {
+        "name": "Calories"
+      },
+      "calories_target": {
+        "name": "Calories Target"
+      },
+      "distance": {
+        "name": "Distance"
+      },
+      "stand_hours": {
+        "name": "Stand Hours"
+      },
+      "stand_hours_target": {
+        "name": "Stand Hours Target"
+      },
+      "fat_burning": {
+        "name": "Fat Burning"
+      },
+      "fat_burning_target": {
+        "name": "Fat Burning Target"
+      },
+      "pai": {
+        "name": "PAI Score"
+      },
+      "pai_total": {
+        "name": "PAI Total"
+      },
+      "temperature": {
+        "name": "Body Temperature"
+      },
+      "sleep_status": {
+        "name": "Sleep Status"
+      },
+      "sleep_score": {
+        "name": "Sleep Score"
+      },
+      "sleep_total_time": {
+        "name": "Sleep Total Time"
+      },
+      "sleep_deep_time": {
+        "name": "Deep Sleep Time"
+      },
+      "sleep_start_time": {
+        "name": "Sleep Start Time"
+      },
+      "sleep_end_time": {
+        "name": "Wake Up Time"
+      },
+      "sleep_deep_minutes": {
+        "name": "Deep Sleep"
+      },
+      "sleep_rem_minutes": {
+        "name": "REM Sleep"
+      },
+      "sleep_light_minutes": {
+        "name": "Light Sleep"
+      },
+      "sleep_wake_minutes": {
+        "name": "Awake Time"
+      },
+      "stress": {
+        "name": "Stress"
+      },
+      "user_age": {
+        "name": "Age"
+      },
+      "user_height": {
+        "name": "Height"
+      },
+      "user_weight": {
+        "name": "Weight"
+      },
+      "user_gender": {
+        "name": "Gender"
+      },
+      "user_region": {
+        "name": "Region"
+      },
+      "workout_last_date": {
+        "name": "Last Workout Date"
+      },
+      "workout_last_duration": {
+        "name": "Last Workout Duration"
+      },
+      "workout_last_sport_type": {
+        "name": "Last Sport Type"
+      },
+      "workout_training_load": {
+        "name": "Training Load"
+      },
+      "workout_vo2_max": {
+        "name": "VO2 Max"
+      },
+      "workout_count": {
+        "name": "Workout Count"
+      },
+      "altitude_state": {
+        "name": "Altitude"
+      },
+      "air_pressure_state": {
+        "name": "Air Pressure"
+      },
+      "os_version": {
+        "name": "OS Version"
+      },
+      "firmware_version": {
+        "name": "Firmware Version"
+      },
+      "min_api": {
+        "name": "Minimum API"
+      },
+      "wear": {
+        "name": "Wear Status",
+        "state": {
+          "not_wearing": "Not Wearing",
+          "is_wearing": "Is Wearing",
+          "in_motion": "In Motion",
+          "not_sure": "Not Sure"
+        }
+      }
+    },
+    "binary_sensor": {
+      "system_mode_dnd": {
+        "name": "Do Not Disturb"
+      },
+      "system_mode_sleep": {
+        "name": "Sleep Mode"
+      },
+      "system_mode_theater": {
+        "name": "Theater Mode"
+      },
+      "system_mode_power_saving": {
+        "name": "Power Saving Mode"
+      },
+      "system_mode_ultra_power_saving": {
+        "name": "Ultra Power Saving Mode"
+      }
     }
   }
 }
