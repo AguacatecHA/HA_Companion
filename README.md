@@ -2,7 +2,7 @@
 
 ## ¿Qué puede hacer esta Integracion HA Companion?
 
-«HA Companion» es un componente para [Home Assistant](https://home-assistant.io/) que permite obtener los datos de salud de tu smartwatch Amazfit/Zepp con la aplicación HA Companion instalada, en tu instalación de Home Assistant, visualizando más de 40 métricas de salud, actividad, sueño y estado del dispositivo.
+«HA Companion» es un componente para [Home Assistant](https://home-assistant.io/) que permite obtener y ordenar los datos de salud en tu instalación de Home Assistant de tu smartwatch Amazfit/Zepp con la aplicación HA Companion instalada,  visualizando más de 40 métricas de salud, actividad, sueño y estado del dispositivo.
 
 ---
 
