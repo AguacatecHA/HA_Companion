@@ -42,6 +42,7 @@ Para añadir la integración a tu instancia de Home Assistant, usa el botón:
 ### Configuración Manual
 
 Una vez instalado, ve a _Dispositivos y Servicios → Añadir Integración_ y busca _HA Companion_.
+<img width="559" height="196" alt="image" src="https://github.com/user-attachments/assets/0a4c8e04-3949-4696-932e-dd8f4d8183c2" />
 
 El asistente te solicitará el nombre de usuario que tienes puesto en tu aplicacion de Zepp HA Companion
 
