@@ -13,13 +13,13 @@ _LOGGER = logging.getLogger(__name__)
 DOMAIN = "ha_companion"
 
 VERSION_JSON_URL = (
-    "https://raw.githubusercontent.com/J-Hollister/HA-Companion/main/version.json"
+    "https://raw.githubusercontent.com/AguacatecHA/HA_Companion/main/Integracion/version.json"
 )
 VERSION_UPDATE_INTERVAL = timedelta(hours=1)
 
 
 class VersionCoordinator(DataUpdateCoordinator):
-    """Fetches the latest published app version from the GitHub repo."""
+    """Fetches the latest published app version from GitHub."""
 
     def __init__(self, hass: HomeAssistant) -> None:
         super().__init__(
