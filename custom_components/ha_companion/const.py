@@ -487,6 +487,56 @@ BINARY_SENSORS = [
         "attribute": "screen_aod_mode",
         "icon": "mdi:overscan",
     },
+    {
+        "key": "is_sleeping",
+        "translation_key": "is_sleeping",
+        "attribute": "sleep_state",
+        "icon": "mdi:sleep",
+        "true_value": "Sleeping",
+    },
+    {
+        "key": "is_moving",
+        "translation_key": "is_moving",
+        "attribute": "wear_state",
+        "icon": "mdi:motion-sensor",
+        "device_class": "motion",
+        "true_value": 2,
+    },
+    {
+        "key": "device_nfc",
+        "translation_key": "device_nfc",
+        "attribute": "device_nfc",
+        "icon": "mdi:nfc",
+        "entity_category": "diagnostic",
+    },
+    {
+        "key": "device_mic",
+        "translation_key": "device_mic",
+        "attribute": "device_mic",
+        "icon": "mdi:microphone",
+        "entity_category": "diagnostic",
+    },
+    {
+        "key": "device_crown",
+        "translation_key": "device_crown",
+        "attribute": "device_crown",
+        "icon": "mdi:rotate-3d-variant",
+        "entity_category": "diagnostic",
+    },
+    {
+        "key": "device_buzzer",
+        "translation_key": "device_buzzer",
+        "attribute": "device_buzzer",
+        "icon": "mdi:bell-ring",
+        "entity_category": "diagnostic",
+    },
+    {
+        "key": "device_speaker",
+        "translation_key": "device_speaker",
+        "attribute": "device_speaker",
+        "icon": "mdi:volume-high",
+        "entity_category": "diagnostic",
+    },
 ]
 
 

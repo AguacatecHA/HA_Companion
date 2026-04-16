@@ -210,6 +210,27 @@
             "screen_aod_mode": {
                 "name": "常亮显示"
             },
+            "is_sleeping": {
+                "name": "正在睡眠"
+            },
+            "is_moving": {
+                "name": "正在移动"
+            },
+            "device_nfc": {
+                "name": "NFC"
+            },
+            "device_mic": {
+                "name": "麦克风"
+            },
+            "device_crown": {
+                "name": "表冠按钮"
+            },
+            "device_buzzer": {
+                "name": "蜂鸣器"
+            },
+            "device_speaker": {
+                "name": "扬声器"
+            },
             "update_pending": {
                 "name": "有可用更新"
             }

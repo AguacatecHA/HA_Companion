@@ -210,6 +210,27 @@
             "screen_aod_mode": {
                 "name": "Ekran zawsze włączony"
             },
+            "is_sleeping": {
+                "name": "Śpi"
+            },
+            "is_moving": {
+                "name": "W ruchu"
+            },
+            "device_nfc": {
+                "name": "NFC"
+            },
+            "device_mic": {
+                "name": "Mikrofon"
+            },
+            "device_crown": {
+                "name": "Przycisk korony"
+            },
+            "device_buzzer": {
+                "name": "Brzęczyk"
+            },
+            "device_speaker": {
+                "name": "Głośnik"
+            },
             "update_pending": {
                 "name": "Dostępna aktualizacja"
             }

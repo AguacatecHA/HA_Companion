@@ -210,6 +210,27 @@
             "screen_aod_mode": {
                 "name": "Altijd aan display"
             },
+            "is_sleeping": {
+                "name": "In slaap"
+            },
+            "is_moving": {
+                "name": "In beweging"
+            },
+            "device_nfc": {
+                "name": "NFC"
+            },
+            "device_mic": {
+                "name": "Microfoon"
+            },
+            "device_crown": {
+                "name": "Kroonknop"
+            },
+            "device_buzzer": {
+                "name": "Zoemer"
+            },
+            "device_speaker": {
+                "name": "Luidspreker"
+            },
             "update_pending": {
                 "name": "Update beschikbaar"
             }

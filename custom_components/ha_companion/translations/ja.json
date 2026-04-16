@@ -210,6 +210,27 @@
             "screen_aod_mode": {
                 "name": "常時表示"
             },
+            "is_sleeping": {
+                "name": "睡眠中"
+            },
+            "is_moving": {
+                "name": "移動中"
+            },
+            "device_nfc": {
+                "name": "NFC"
+            },
+            "device_mic": {
+                "name": "マイク"
+            },
+            "device_crown": {
+                "name": "クラウンボタン"
+            },
+            "device_buzzer": {
+                "name": "ブザー"
+            },
+            "device_speaker": {
+                "name": "スピーカー"
+            },
             "update_pending": {
                 "name": "アップデート利用可能"
             }

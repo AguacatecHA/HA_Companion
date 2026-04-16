@@ -210,6 +210,27 @@
             "screen_aod_mode": {
                 "name": "Pantalla Sempre Activa"
             },
+            "is_sleeping": {
+                "name": "Dormint"
+            },
+            "is_moving": {
+                "name": "En Moviment"
+            },
+            "device_nfc": {
+                "name": "NFC"
+            },
+            "device_mic": {
+                "name": "Micròfon"
+            },
+            "device_crown": {
+                "name": "Botó Corona"
+            },
+            "device_buzzer": {
+                "name": "Vibrador"
+            },
+            "device_speaker": {
+                "name": "Altaveu"
+            },
             "update_pending": {
                 "name": "Actualització Disponible"
             }

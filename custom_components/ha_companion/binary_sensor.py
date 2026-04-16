@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_state_change_event
@@ -58,6 +59,8 @@ class WatchBinarySensor(BinarySensorEntity):
         self._attr_unique_id = f"{entry_id}_{sensor_config['key']}"
         self._attr_icon = sensor_config.get("icon")
         self._attr_device_class = sensor_config.get("device_class")
+        self._attr_entity_category = EntityCategory(sensor_config["entity_category"]) \
+            if sensor_config.get("entity_category") else None
         self._attr_is_on = None
         self._attr_available = False
 
@@ -77,10 +80,19 @@ class WatchBinarySensor(BinarySensorEntity):
         """Convert attribute value to boolean."""
         if attr_value is None:
             return None
+
+        # Config-driven exact match (e.g. true_value: "Sleeping" or true_value: 2)
+        true_value = self._config.get("true_value")
+        if true_value is not None:
+            try:
+                return int(attr_value) == int(true_value)
+            except (ValueError, TypeError):
+                return str(attr_value).lower() == str(true_value).lower()
+
         if isinstance(attr_value, bool):
             return attr_value
         if isinstance(attr_value, str):
-            return attr_value.lower() == "on"
+            return attr_value.lower() in ("on", "true", "yes")
         if isinstance(attr_value, (int, float)):
             return bool(attr_value)
         return None

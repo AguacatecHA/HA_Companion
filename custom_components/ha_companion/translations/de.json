@@ -210,6 +210,27 @@
             "screen_aod_mode": {
                 "name": "Always-On-Display"
             },
+            "is_sleeping": {
+                "name": "Schläft"
+            },
+            "is_moving": {
+                "name": "In Bewegung"
+            },
+            "device_nfc": {
+                "name": "NFC"
+            },
+            "device_mic": {
+                "name": "Mikrofon"
+            },
+            "device_crown": {
+                "name": "Kronentaste"
+            },
+            "device_buzzer": {
+                "name": "Summer"
+            },
+            "device_speaker": {
+                "name": "Lautsprecher"
+            },
             "update_pending": {
                 "name": "Update verfügbar"
             }

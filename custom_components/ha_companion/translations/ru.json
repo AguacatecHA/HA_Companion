@@ -210,6 +210,27 @@
             "screen_aod_mode": {
                 "name": "Экран всегда включён"
             },
+            "is_sleeping": {
+                "name": "Спит"
+            },
+            "is_moving": {
+                "name": "В движении"
+            },
+            "device_nfc": {
+                "name": "NFC"
+            },
+            "device_mic": {
+                "name": "Микрофон"
+            },
+            "device_crown": {
+                "name": "Кнопка кроны"
+            },
+            "device_buzzer": {
+                "name": "Зуммер"
+            },
+            "device_speaker": {
+                "name": "Динамик"
+            },
             "update_pending": {
                 "name": "Доступно обновление"
             }
