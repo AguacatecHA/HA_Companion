@@ -2,12 +2,14 @@
 from __future__ import annotations
 import logging
 import json
+from datetime import datetime, timezone
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.const import EntityCategory
 
 from .const import DOMAIN, SENSORS, SPORT_TYPES
@@ -27,11 +29,14 @@ async def async_setup_entry(
     master_sensor_id = f"sensor.{username}"
     _LOGGER.info(f"Setting up Watch Sensors for master: {master_sensor_id}")
 
+    coordinator = hass.data[DOMAIN]["version_coordinator"]
+
     entities = []
     for sensor_config in SENSORS:
         entities.append(
             WatchSensor(hass, config_entry.entry_id, username, master_sensor_id, sensor_config)
         )
+    entities.append(PublishedVersionSensor(coordinator, config_entry.entry_id, username))
     async_add_entities(entities, True)
 
 
@@ -179,7 +184,17 @@ class WatchSensor(SensorEntity):
 
         elif self._config.get("sleep_stage_extract"):
             return self._extract_sleep_stage(attr_value)
-            # --- Valor directo (número/string) ---
+
+        elif self._config.get("iso_timestamp"):
+            try:
+                dt = datetime.fromisoformat(str(attr_value).replace("Z", "+00:00"))
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+                return dt
+            except Exception as e:
+                _LOGGER.warning(f"[{self._config['key']}] iso_timestamp parse error: {e}")
+                return None
+
         else:
             return attr_value
 
@@ -303,6 +318,47 @@ class WatchSensor(SensorEntity):
                 if self._config.get("key") == "wear":
                     raw_value = self._wear_to_text(raw_value)
                 elif self._config.get("key") == "workout_last_sport_type":  # ← añadir
-                    raw_value = self._sport_type_to_text(raw_value)                    
+                    raw_value = self._sport_type_to_text(raw_value)
                 self._attr_native_value = raw_value
                 self._attr_available = self._attr_native_value is not None
+
+
+class PublishedVersionSensor(CoordinatorEntity, SensorEntity):
+    """Sensor that shows the latest published app version fetched from GitHub."""
+
+    def __init__(self, coordinator, entry_id: str, username: str) -> None:
+        super().__init__(coordinator)
+        self._entry_id = entry_id
+        self._username = username
+        self._attr_has_entity_name = True
+        self._attr_translation_key = "published_version"
+        self._attr_unique_id = f"{entry_id}_published_version"
+        self._attr_icon = "mdi:tag-arrow-up"
+        self._attr_entity_category = EntityCategory.DIAGNOSTIC
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, f"{username}_watch")},
+            name=f"{username.capitalize()} Amazfit Watch",
+            manufacturer="Aguacatec Team",
+            model="Amazfit Watch",
+            sw_version=None,
+        )
+
+    @property
+    def native_value(self):
+        if self.coordinator.data:
+            return self.coordinator.data.get("published_version")
+        return None
+
+    @property
+    def extra_state_attributes(self):
+        if not self.coordinator.data:
+            return {}
+        return {
+            k: v
+            for k, v in self.coordinator.data.items()
+            if k != "published_version" and v
+        }
+
+    @property
+    def available(self) -> bool:
+        return self.coordinator.last_update_success and self.native_value is not None

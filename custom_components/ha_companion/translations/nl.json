@@ -151,6 +151,18 @@
             "min_api": {
                 "name": "Minimale API"
             },
+            "app_version": {
+                "name": "App-versie"
+            },
+            "published_version": {
+                "name": "Gepubliceerde versie"
+            },
+            "record_time": {
+                "name": "Laatste synchronisatie"
+            },
+            "update_source": {
+                "name": "Updatebron"
+            },
             "wear": {
                 "name": "Draagstatus",
                 "state": {

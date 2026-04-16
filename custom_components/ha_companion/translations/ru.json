@@ -151,6 +151,18 @@
             "min_api": {
                 "name": "Минимальный API"
             },
+            "app_version": {
+                "name": "Версия приложения"
+            },
+            "published_version": {
+                "name": "Опубликованная версия"
+            },
+            "record_time": {
+                "name": "Последняя синхронизация"
+            },
+            "update_source": {
+                "name": "Источник обновления"
+            },
             "wear": {
                 "name": "Статус ношения",
                 "state": {

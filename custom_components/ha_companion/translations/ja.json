@@ -151,6 +151,18 @@
             "min_api": {
                 "name": "最小API"
             },
+            "app_version": {
+                "name": "アプリバージョン"
+            },
+            "published_version": {
+                "name": "公開バージョン"
+            },
+            "record_time": {
+                "name": "最終同期"
+            },
+            "update_source": {
+                "name": "更新元"
+            },
             "wear": {
                 "name": "装着状態",
                 "state": {

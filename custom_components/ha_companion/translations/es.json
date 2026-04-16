@@ -151,6 +151,18 @@
             "min_api": {
                 "name": "API Mínima"
             },
+            "app_version": {
+                "name": "Versión de la App"
+            },
+            "published_version": {
+                "name": "Versión Publicada"
+            },
+            "record_time": {
+                "name": "Última Sincronización"
+            },
+            "update_source": {
+                "name": "Origen de la Actualización"
+            },
             "wear": {
                 "name": "Estado del Reloj",
                 "state": {

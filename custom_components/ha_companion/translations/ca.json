@@ -151,6 +151,18 @@
             "min_api": {
                 "name": "API Mínima"
             },
+            "app_version": {
+                "name": "Versió de l'App"
+            },
+            "published_version": {
+                "name": "Versió Publicada"
+            },
+            "record_time": {
+                "name": "Última Sincronització"
+            },
+            "update_source": {
+                "name": "Origen de l'Actualització"
+            },
             "wear": {
                 "name": "Estat del rellotge",
                 "state": {

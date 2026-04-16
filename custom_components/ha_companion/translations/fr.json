@@ -151,6 +151,18 @@
             "min_api": {
                 "name": "API minimale"
             },
+            "app_version": {
+                "name": "Version de l'app"
+            },
+            "published_version": {
+                "name": "Version publiée"
+            },
+            "record_time": {
+                "name": "Dernière synchronisation"
+            },
+            "update_source": {
+                "name": "Source de mise à jour"
+            },
             "wear": {
                 "name": "Statut du port",
                 "state": {

@@ -365,11 +365,34 @@ SENSORS = [
         "icon": "mdi:chip",
         "entity_category": "diagnostic"
     },
-    { 
-        "key": "min_api", 
-        "translation_key": "min_api", 
-        "attribute": "min_api", 
-        "icon": "mdi:api", 
+    {
+        "key": "min_api",
+        "translation_key": "min_api",
+        "attribute": "min_api",
+        "icon": "mdi:api",
+        "entity_category": "diagnostic"
+    },
+    {
+        "key": "app_version",
+        "translation_key": "app_version",
+        "attribute": "app_version",
+        "icon": "mdi:cellphone-arrow-down",
+        "entity_category": "diagnostic"
+    },
+    {
+        "key": "record_time",
+        "translation_key": "record_time",
+        "attribute": "record_time",
+        "icon": "mdi:clock-check-outline",
+        "device_class": "timestamp",
+        "entity_category": "diagnostic",
+        "iso_timestamp": True
+    },
+    {
+        "key": "update_source",
+        "translation_key": "update_source",
+        "attribute": "update_source",
+        "icon": "mdi:sync",
         "entity_category": "diagnostic"
     },
 ]
