@@ -1,9 +1,12 @@
 """Diagnostics support for HA Companion."""
 from __future__ import annotations
+from homeassistant.components.diagnostics import async_redact_data
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
+
+TO_REDACT = {"username"}
 
 
 async def async_get_config_entry_diagnostics(
@@ -14,7 +17,7 @@ async def async_get_config_entry_diagnostics(
     master_state = hass.states.get(f"sensor.{username}")
     coordinator = hass.data.get(DOMAIN, {}).get("version_coordinator")
 
-    return {
+    return async_redact_data({
         "config": {
             "username": username,
         },
@@ -25,4 +28,4 @@ async def async_get_config_entry_diagnostics(
         },
         "published_version": coordinator.data if coordinator else None,
         "coordinator_last_update_success": coordinator.last_update_success if coordinator else None,
-    }
+    }, TO_REDACT)

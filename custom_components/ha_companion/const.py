@@ -2,6 +2,13 @@
 
 DOMAIN = "ha_companion"
 
+WEAR_STATES = {
+    0: "not_wearing",
+    1: "is_wearing",
+    2: "in_motion",
+    3: "not_sure",
+}
+
 # Definición de todos los sensores
 SENSORS = [
     {
@@ -249,7 +256,6 @@ SENSORS = [
     },
     {
         "key": "stress",
-        "name": "Stress",
         "attribute": "stress_state",
         "icon": "mdi:emoticon-happy",
         "state_class": "measurement",
@@ -257,9 +263,9 @@ SENSORS = [
     },
     {
         "key": "wear",
-        "name": "Wear Status",
         "attribute": "wear_state",
         "icon": "mdi:watch",
+        "lookup_table": WEAR_STATES,
     },
     {
         "key": "user_age",
@@ -303,7 +309,9 @@ SENSORS = [
         "translation_key": "Last Workout Date",
         "attribute": "workout_last_date",
         "icon": "mdi:calendar-clock",
-        "time_convert": True,
+        "device_class": "timestamp",
+        "iso_timestamp": True,
+        "entity_category": "diagnostic",
     },
     {
         "key": "workout_last_duration",
@@ -723,4 +731,10 @@ SPORT_TYPES = {
     1202: "Kitesurfing (Identification Gliding)", 
     1203: "Ultra Marathon",
 }
+
+# Patch lookup_table into configs that depend on dicts defined after SENSORS
+for _s in SENSORS:
+    if _s["key"] == "workout_last_sport_type":
+        _s["lookup_table"] = SPORT_TYPES
+        break
 

@@ -13,7 +13,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.const import EntityCategory
 
-from .const import DOMAIN, SENSORS, SPORT_TYPES
+from .const import DOMAIN, SENSORS
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -68,6 +68,8 @@ class WatchSensor(SensorEntity):
         self._attr_state_class = sensor_config.get("state_class")
         self._attr_native_value = None
         self._attr_available = False
+        self._cached_raw_constants = None
+        self._cached_constants = None
         self._attr_entity_category = EntityCategory(sensor_config["entity_category"]) \
             if sensor_config.get("entity_category") else None
         self._attr_device_info = DeviceInfo(
@@ -196,6 +198,13 @@ class WatchSensor(SensorEntity):
                 _LOGGER.warning(f"[{self._config['key']}] iso_timestamp parse error: {e}")
                 return None
 
+        elif self._config.get("lookup_table"):
+            table = self._config["lookup_table"]
+            try:
+                return table.get(int(attr_value), f"Unknown ({attr_value})")
+            except (TypeError, ValueError):
+                return str(attr_value)
+
         else:
             return attr_value
 
@@ -213,7 +222,7 @@ class WatchSensor(SensorEntity):
             if not isinstance(data, list) or len(data) == 0:
                 return None
 
-            # Obtener constantes de fases desde el sensor maestro
+            # Obtener constantes de fases desde el sensor maestro (con cache)
             master_state = self.hass.states.get(self._master_sensor_id)
             if not master_state:
                 return None
@@ -222,13 +231,16 @@ class WatchSensor(SensorEntity):
             if raw_constants is None:
                 return None
 
-            # Parsear constantes
-            if isinstance(raw_constants, str):
-                constants = json.loads(raw_constants)
-            elif isinstance(raw_constants, dict):
-                constants = raw_constants
-            else:
-                return None
+            if raw_constants != self._cached_raw_constants:
+                if isinstance(raw_constants, str):
+                    self._cached_constants = json.loads(raw_constants)
+                elif isinstance(raw_constants, dict):
+                    self._cached_constants = raw_constants
+                else:
+                    return None
+                self._cached_raw_constants = raw_constants
+
+            constants = self._cached_constants
 
             # Obtener el model ID de la fase que queremos calcular
             stage_name = self._config["sleep_stage_extract"]
@@ -256,33 +268,6 @@ class WatchSensor(SensorEntity):
     # ============================================================
     # HANDLERS
     # ============================================================
-    def _wear_to_text(self, raw_value):
-        """Convert 0-3 to friendly text."""
-        if raw_value is None:
-            return None
-        
-        try:
-            ivalue = int(raw_value)
-            mapping = {
-                0: "not_wearing",
-                1: "is_wearing", 
-                2: "in_motion",
-                3: "not_sure"
-            }
-            return mapping.get(ivalue, "Unknown")
-        except (TypeError, ValueError):
-            return "Unknown"
-
-    def _sport_type_to_text(self, raw_value):
-        """Convert sport type code to friendly text."""
-        if raw_value is None:
-            return None
-        try:
-            code = int(raw_value)
-            return SPORT_TYPES.get(code, f"Unknown ({code})")
-        except (TypeError, ValueError):
-            return str(raw_value)
-
     @callback
     def _handle_master_update(self, event) -> None:
         """Handle master sensor state changes."""
@@ -299,10 +284,6 @@ class WatchSensor(SensorEntity):
             return
 
         raw_value = self._extract_value(attr_value)
-        if self._config.get("key") == "wear":
-            raw_value = self._wear_to_text(raw_value)
-        elif self._config.get("key") == "workout_last_sport_type":
-            raw_value = self._sport_type_to_text(raw_value)
         if raw_value == "Not supported":
             raw_value = None
         self._attr_native_value = raw_value
