@@ -79,7 +79,6 @@ SENSORS = [
         "translation_key": "Calories",
         "attribute": "calorie_state",
         "unit": "kcal",
-        "device_class": "energy",
         "icon": "mdi:fire",
         "state_class": "total_increasing"
     },
@@ -88,7 +87,6 @@ SENSORS = [
         "translation_key": "Calories Target",
         "attribute": "calories_burnt_target",
         "unit": "kcal",
-        "device_class": "energy",
         "icon": "mdi:fire-circle",
         "state_class": "measurement",
         "entity_category": "diagnostic",
@@ -150,8 +148,8 @@ SENSORS = [
         "attribute": "pai_total",
         "unit": "PAI",
         "icon": "mdi:chart-line",
-        "state_class": "total_increasing"
-    },    
+        "state_class": "measurement"
+    },
     {
         "key": "temperature",
         "translation_key": "Body Temperature",
