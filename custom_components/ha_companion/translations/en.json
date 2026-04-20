@@ -191,6 +191,11 @@
         }
       }
     },
+    "device_tracker": {
+      "watch_location": {
+        "name": "Watch Location"
+      }
+    },
     "binary_sensor": {
       "system_mode_dnd": {
         "name": "Do Not Disturb"
