@@ -151,6 +151,36 @@
             "min_api": {
                 "name": "Минимальный API"
             },
+            "app_version": {
+                "name": "Версия приложения"
+            },
+            "published_version": {
+                "name": "Опубликованная версия"
+            },
+            "record_time": {
+                "name": "Последняя синхронизация"
+            },
+            "update_source": {
+                "name": "Источник обновления"
+            },
+            "workout_full_recovery_time": {
+                "name": "Полное время восстановления"
+            },
+            "screen_brightness": {
+                "name": "Яркость экрана"
+            },
+            "device_name": {
+                "name": "Модель устройства"
+            },
+            "user_nick_name": {
+                "name": "Никнейм пользователя"
+            },
+            "disk_free": {
+                "name": "Свободная память"
+            },
+            "disk_total": {
+                "name": "Общая память"
+            },
             "wear": {
                 "name": "Статус ношения",
                 "state": {
@@ -176,6 +206,33 @@
             },
             "system_mode_ultra_power_saving": {
                 "name": "Режим ультра экономии энергии"
+            },
+            "screen_aod_mode": {
+                "name": "Экран всегда включён"
+            },
+            "is_sleeping": {
+                "name": "Спит"
+            },
+            "is_moving": {
+                "name": "В движении"
+            },
+            "device_nfc": {
+                "name": "NFC"
+            },
+            "device_mic": {
+                "name": "Микрофон"
+            },
+            "device_crown": {
+                "name": "Кнопка кроны"
+            },
+            "device_buzzer": {
+                "name": "Зуммер"
+            },
+            "device_speaker": {
+                "name": "Динамик"
+            },
+            "update_pending": {
+                "name": "Доступно обновление"
             }
         }
     }

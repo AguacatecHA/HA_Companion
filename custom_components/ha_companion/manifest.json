@@ -1,13 +1,13 @@
 {
     "domain": "ha_companion",
     "name": "HA Companion",
-    "version": "0.1.2",
-    "documentation": "https://github.com/J-Hollister/HA-Companion",
+    "version": "0.1.4",
+    "documentation": "https://github.com/HA_Companion/HA-Companion",
     "requirements": [
       "aiohttp"
     ],
-    "issue_tracker": "https://github.com/J-Hollister/HA-Companion/issues",
+    "issue_tracker": "https://github.com/HA_Companion/HA-Companion/issues",
     "codeowners": ["@J-Hollister"],
     "config_flow": true,
-    "iot_class": "cloud_polling"
+    "iot_class": "local_push"
   }

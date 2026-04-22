@@ -151,6 +151,36 @@
             "min_api": {
                 "name": "API Mínima"
             },
+            "app_version": {
+                "name": "Versió de l'App"
+            },
+            "published_version": {
+                "name": "Versió Publicada"
+            },
+            "record_time": {
+                "name": "Última Sincronització"
+            },
+            "update_source": {
+                "name": "Origen de l'Actualització"
+            },
+            "workout_full_recovery_time": {
+                "name": "Temps de Recuperació Total"
+            },
+            "screen_brightness": {
+                "name": "Brillantor de Pantalla"
+            },
+            "device_name": {
+                "name": "Model del Dispositiu"
+            },
+            "user_nick_name": {
+                "name": "Nom d'Usuari"
+            },
+            "disk_free": {
+                "name": "Emmagatzematge Lliure"
+            },
+            "disk_total": {
+                "name": "Emmagatzematge Total"
+            },
             "wear": {
                 "name": "Estat del rellotge",
                 "state": {
@@ -176,6 +206,33 @@
             },
             "system_mode_ultra_power_saving": {
                 "name": "Ultra Estalvi d'Energia"
+            },
+            "screen_aod_mode": {
+                "name": "Pantalla Sempre Activa"
+            },
+            "is_sleeping": {
+                "name": "Dormint"
+            },
+            "is_moving": {
+                "name": "En Moviment"
+            },
+            "device_nfc": {
+                "name": "NFC"
+            },
+            "device_mic": {
+                "name": "Micròfon"
+            },
+            "device_crown": {
+                "name": "Botó Corona"
+            },
+            "device_buzzer": {
+                "name": "Vibrador"
+            },
+            "device_speaker": {
+                "name": "Altaveu"
+            },
+            "update_pending": {
+                "name": "Actualització Disponible"
             }
         }
     }

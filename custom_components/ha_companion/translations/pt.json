@@ -151,6 +151,36 @@
             "min_api": {
                 "name": "API mínima"
             },
+            "app_version": {
+                "name": "Versão do App"
+            },
+            "published_version": {
+                "name": "Versão Publicada"
+            },
+            "record_time": {
+                "name": "Última Sincronização"
+            },
+            "update_source": {
+                "name": "Origem da Atualização"
+            },
+            "workout_full_recovery_time": {
+                "name": "Tempo de Recuperação Total"
+            },
+            "screen_brightness": {
+                "name": "Brilho da Tela"
+            },
+            "device_name": {
+                "name": "Modelo do Dispositivo"
+            },
+            "user_nick_name": {
+                "name": "Apelido do Usuário"
+            },
+            "disk_free": {
+                "name": "Armazenamento Livre"
+            },
+            "disk_total": {
+                "name": "Armazenamento Total"
+            },
             "wear": {
                 "name": "Status de uso",
                 "state": {
@@ -176,6 +206,33 @@
             },
             "system_mode_ultra_power_saving": {
                 "name": "Modo Ultra poupança de energia"
+            },
+            "screen_aod_mode": {
+                "name": "Ecrã sempre ativo"
+            },
+            "is_sleeping": {
+                "name": "A dormir"
+            },
+            "is_moving": {
+                "name": "Em movimento"
+            },
+            "device_nfc": {
+                "name": "NFC"
+            },
+            "device_mic": {
+                "name": "Microfone"
+            },
+            "device_crown": {
+                "name": "Botão coroa"
+            },
+            "device_buzzer": {
+                "name": "Buzzer"
+            },
+            "device_speaker": {
+                "name": "Altifalante"
+            },
+            "update_pending": {
+                "name": "Atualização disponível"
             }
         }
     }

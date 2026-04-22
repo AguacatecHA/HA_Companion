@@ -151,6 +151,36 @@
             "min_api": {
                 "name": "Minimale API"
             },
+            "app_version": {
+                "name": "App-versie"
+            },
+            "published_version": {
+                "name": "Gepubliceerde versie"
+            },
+            "record_time": {
+                "name": "Laatste synchronisatie"
+            },
+            "update_source": {
+                "name": "Updatebron"
+            },
+            "workout_full_recovery_time": {
+                "name": "Volledige hersteltijd"
+            },
+            "screen_brightness": {
+                "name": "Schermhelderheid"
+            },
+            "device_name": {
+                "name": "Apparaatmodel"
+            },
+            "user_nick_name": {
+                "name": "Gebruikersnaam"
+            },
+            "disk_free": {
+                "name": "Vrije opslag"
+            },
+            "disk_total": {
+                "name": "Totale opslag"
+            },
             "wear": {
                 "name": "Draagstatus",
                 "state": {
@@ -176,6 +206,33 @@
             },
             "system_mode_ultra_power_saving": {
                 "name": "Ultra energiebesparing"
+            },
+            "screen_aod_mode": {
+                "name": "Altijd aan display"
+            },
+            "is_sleeping": {
+                "name": "In slaap"
+            },
+            "is_moving": {
+                "name": "In beweging"
+            },
+            "device_nfc": {
+                "name": "NFC"
+            },
+            "device_mic": {
+                "name": "Microfoon"
+            },
+            "device_crown": {
+                "name": "Kroonknop"
+            },
+            "device_buzzer": {
+                "name": "Zoemer"
+            },
+            "device_speaker": {
+                "name": "Luidspreker"
+            },
+            "update_pending": {
+                "name": "Update beschikbaar"
             }
         }
     }

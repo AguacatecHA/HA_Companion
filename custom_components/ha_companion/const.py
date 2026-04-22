@@ -2,6 +2,13 @@
 
 DOMAIN = "ha_companion"
 
+WEAR_STATES = {
+    0: "not_wearing",
+    1: "is_wearing",
+    2: "in_motion",
+    3: "not_sure",
+}
+
 # Definición de todos los sensores
 SENSORS = [
     {
@@ -72,7 +79,6 @@ SENSORS = [
         "translation_key": "Calories",
         "attribute": "calorie_state",
         "unit": "kcal",
-        "device_class": "energy",
         "icon": "mdi:fire",
         "state_class": "total_increasing"
     },
@@ -81,7 +87,6 @@ SENSORS = [
         "translation_key": "Calories Target",
         "attribute": "calories_burnt_target",
         "unit": "kcal",
-        "device_class": "energy",
         "icon": "mdi:fire-circle",
         "state_class": "measurement",
         "entity_category": "diagnostic",
@@ -143,8 +148,8 @@ SENSORS = [
         "attribute": "pai_total",
         "unit": "PAI",
         "icon": "mdi:chart-line",
-        "state_class": "total_increasing"
-    },    
+        "state_class": "measurement"
+    },
     {
         "key": "temperature",
         "translation_key": "Body Temperature",
@@ -249,7 +254,6 @@ SENSORS = [
     },
     {
         "key": "stress",
-        "name": "Stress",
         "attribute": "stress_state",
         "icon": "mdi:emoticon-happy",
         "state_class": "measurement",
@@ -257,9 +261,9 @@ SENSORS = [
     },
     {
         "key": "wear",
-        "name": "Wear Status",
         "attribute": "wear_state",
         "icon": "mdi:watch",
+        "lookup_table": WEAR_STATES,
     },
     {
         "key": "user_age",
@@ -303,7 +307,9 @@ SENSORS = [
         "translation_key": "Last Workout Date",
         "attribute": "workout_last_date",
         "icon": "mdi:calendar-clock",
-        "time_convert": True,
+        "device_class": "timestamp",
+        "iso_timestamp": True,
+        "entity_category": "diagnostic",
     },
     {
         "key": "workout_last_duration",
@@ -338,6 +344,13 @@ SENSORS = [
         "icon": "mdi:counter",
     },
     {
+        "key": "workout_history",
+        "translation_key": "workout_history",
+        "attribute": "workout_history",
+        "icon": "mdi:history",
+        "workout_history_extract": True,
+    },
+    {
         "key": "altitude_state",
         "translation_key": "altitude_state",
         "attribute": "altitude_state",
@@ -365,12 +378,88 @@ SENSORS = [
         "icon": "mdi:chip",
         "entity_category": "diagnostic"
     },
-    { 
-        "key": "min_api", 
-        "translation_key": "min_api", 
-        "attribute": "min_api", 
-        "icon": "mdi:api", 
+    {
+        "key": "min_api",
+        "translation_key": "min_api",
+        "attribute": "min_api",
+        "icon": "mdi:api",
         "entity_category": "diagnostic"
+    },
+    {
+        "key": "app_version",
+        "translation_key": "app_version",
+        "attribute": "app_version",
+        "icon": "mdi:cellphone-arrow-down",
+        "entity_category": "diagnostic"
+    },
+    {
+        "key": "record_time",
+        "translation_key": "record_time",
+        "attribute": "record_time",
+        "icon": "mdi:clock-check-outline",
+        "device_class": "timestamp",
+        "entity_category": "diagnostic",
+        "iso_timestamp": True
+    },
+    {
+        "key": "update_source",
+        "translation_key": "update_source",
+        "attribute": "update_source",
+        "icon": "mdi:sync",
+        "entity_category": "diagnostic"
+    },
+    {
+        "key": "workout_full_recovery_time",
+        "translation_key": "workout_full_recovery_time",
+        "attribute": "workout_full_recovery_time",
+        "icon": "mdi:timer-refresh-outline",
+        "unit": "h",
+        "state_class": "measurement"
+    },
+    {
+        "key": "screen_brightness",
+        "translation_key": "screen_brightness",
+        "attribute": "screen_brightness",
+        "icon": "mdi:brightness-6",
+        "unit": "%",
+        "state_class": "measurement",
+        "entity_category": "diagnostic"
+    },
+    {
+        "key": "device_name",
+        "translation_key": "device_name",
+        "attribute": "device_name",
+        "icon": "mdi:watch",
+        "entity_category": "diagnostic"
+    },
+    {
+        "key": "user_nick_name",
+        "translation_key": "user_nick_name",
+        "attribute": "user_nick_name",
+        "icon": "mdi:account-circle",
+        "entity_category": "diagnostic"
+    },
+    {
+        "key": "disk_free",
+        "translation_key": "disk_free",
+        "attribute": "disk_info",
+        "icon": "mdi:harddisk",
+        "unit": "MB",
+        "state_class": "measurement",
+        "entity_category": "diagnostic",
+        "json_extract": "free",
+        "disk_convert": True
+    },
+    {
+        "key": "disk_total",
+        "translation_key": "disk_total",
+        "attribute": "disk_info",
+        "icon": "mdi:harddisk",
+        "unit": "MB",
+        "state_class": "measurement",
+        "entity_category": "diagnostic",
+        "json_extract": "total",
+        "disk_convert": True
     },
 ]
 
@@ -399,11 +488,67 @@ BINARY_SENSORS = [
         "attribute": "system_mode_power_saving", 
         "icon": "mdi:battery-low", 
     },
-    { 
-        "key": "system_mode_ultra_power_saving", 
-        "translation_key": "system_mode_ultra_power_saving", 
-        "attribute": "system_mode_ultra_power_saving", 
-        "icon": "mdi:battery-outline", 
+    {
+        "key": "system_mode_ultra_power_saving",
+        "translation_key": "system_mode_ultra_power_saving",
+        "attribute": "system_mode_ultra_power_saving",
+        "icon": "mdi:battery-outline",
+    },
+    {
+        "key": "screen_aod_mode",
+        "translation_key": "screen_aod_mode",
+        "attribute": "screen_aod_mode",
+        "icon": "mdi:overscan",
+    },
+    {
+        "key": "is_sleeping",
+        "translation_key": "is_sleeping",
+        "attribute": "sleep_state",
+        "icon": "mdi:sleep",
+        "true_value": "Sleeping",
+    },
+    {
+        "key": "is_moving",
+        "translation_key": "is_moving",
+        "attribute": "wear_state",
+        "icon": "mdi:motion-sensor",
+        "device_class": "motion",
+        "true_value": 2,
+    },
+    {
+        "key": "device_nfc",
+        "translation_key": "device_nfc",
+        "attribute": "device_nfc",
+        "icon": "mdi:nfc",
+        "entity_category": "diagnostic",
+    },
+    {
+        "key": "device_mic",
+        "translation_key": "device_mic",
+        "attribute": "device_mic",
+        "icon": "mdi:microphone",
+        "entity_category": "diagnostic",
+    },
+    {
+        "key": "device_crown",
+        "translation_key": "device_crown",
+        "attribute": "device_crown",
+        "icon": "mdi:rotate-3d-variant",
+        "entity_category": "diagnostic",
+    },
+    {
+        "key": "device_buzzer",
+        "translation_key": "device_buzzer",
+        "attribute": "device_buzzer",
+        "icon": "mdi:bell-ring",
+        "entity_category": "diagnostic",
+    },
+    {
+        "key": "device_speaker",
+        "translation_key": "device_speaker",
+        "attribute": "device_speaker",
+        "icon": "mdi:volume-high",
+        "entity_category": "diagnostic",
     },
 ]
 
@@ -591,4 +736,10 @@ SPORT_TYPES = {
     1202: "Kitesurfing (Identification Gliding)", 
     1203: "Ultra Marathon",
 }
+
+# Patch lookup_table into configs that depend on dicts defined after SENSORS
+for _s in SENSORS:
+    if _s["key"] == "workout_last_sport_type":
+        _s["lookup_table"] = SPORT_TYPES
+        break
 

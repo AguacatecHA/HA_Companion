@@ -151,6 +151,36 @@
             "min_api": {
                 "name": "Minimalne API"
             },
+            "app_version": {
+                "name": "Wersja aplikacji"
+            },
+            "published_version": {
+                "name": "Opublikowana wersja"
+            },
+            "record_time": {
+                "name": "Ostatnia synchronizacja"
+            },
+            "update_source": {
+                "name": "Źródło aktualizacji"
+            },
+            "workout_full_recovery_time": {
+                "name": "Pełny czas regeneracji"
+            },
+            "screen_brightness": {
+                "name": "Jasność ekranu"
+            },
+            "device_name": {
+                "name": "Model urządzenia"
+            },
+            "user_nick_name": {
+                "name": "Pseudonim użytkownika"
+            },
+            "disk_free": {
+                "name": "Wolna pamięć"
+            },
+            "disk_total": {
+                "name": "Całkowita pamięć"
+            },
             "wear": {
                 "name": "Status noszenia",
                 "state": {
@@ -176,6 +206,33 @@
             },
             "system_mode_ultra_power_saving": {
                 "name": "Ultra tryb oszczędzania energii"
+            },
+            "screen_aod_mode": {
+                "name": "Ekran zawsze włączony"
+            },
+            "is_sleeping": {
+                "name": "Śpi"
+            },
+            "is_moving": {
+                "name": "W ruchu"
+            },
+            "device_nfc": {
+                "name": "NFC"
+            },
+            "device_mic": {
+                "name": "Mikrofon"
+            },
+            "device_crown": {
+                "name": "Przycisk korony"
+            },
+            "device_buzzer": {
+                "name": "Brzęczyk"
+            },
+            "device_speaker": {
+                "name": "Głośnik"
+            },
+            "update_pending": {
+                "name": "Dostępna aktualizacja"
             }
         }
     }

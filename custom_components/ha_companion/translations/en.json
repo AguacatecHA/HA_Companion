@@ -151,6 +151,39 @@
       "min_api": {
         "name": "Minimum API"
       },
+      "app_version": {
+        "name": "App Version"
+      },
+      "published_version": {
+        "name": "Published Version"
+      },
+      "record_time": {
+        "name": "Last Sync"
+      },
+      "update_source": {
+        "name": "Update Source"
+      },
+      "workout_full_recovery_time": {
+        "name": "Full Recovery Time"
+      },
+      "workout_history": {
+        "name": "Recent Workouts"
+      },
+      "screen_brightness": {
+        "name": "Screen Brightness"
+      },
+      "device_name": {
+        "name": "Device Model"
+      },
+      "user_nick_name": {
+        "name": "User Nickname"
+      },
+      "disk_free": {
+        "name": "Storage Free"
+      },
+      "disk_total": {
+        "name": "Storage Total"
+      },
       "wear": {
         "name": "Wear Status",
         "state": {
@@ -159,6 +192,11 @@
           "in_motion": "In Motion",
           "not_sure": "Not Sure"
         }
+      }
+    },
+    "device_tracker": {
+      "watch_location": {
+        "name": "Watch Location"
       }
     },
     "binary_sensor": {
@@ -176,6 +214,33 @@
       },
       "system_mode_ultra_power_saving": {
         "name": "Ultra Power Saving Mode"
+      },
+      "screen_aod_mode": {
+        "name": "Always-On Display"
+      },
+      "is_sleeping": {
+        "name": "Sleeping"
+      },
+      "is_moving": {
+        "name": "Moving"
+      },
+      "device_nfc": {
+        "name": "NFC"
+      },
+      "device_mic": {
+        "name": "Microphone"
+      },
+      "device_crown": {
+        "name": "Crown Button"
+      },
+      "device_buzzer": {
+        "name": "Buzzer"
+      },
+      "device_speaker": {
+        "name": "Speaker"
+      },
+      "update_pending": {
+        "name": "Update Available"
       }
     }
   }

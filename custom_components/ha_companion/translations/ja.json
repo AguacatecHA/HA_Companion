@@ -151,6 +151,36 @@
             "min_api": {
                 "name": "最小API"
             },
+            "app_version": {
+                "name": "アプリバージョン"
+            },
+            "published_version": {
+                "name": "公開バージョン"
+            },
+            "record_time": {
+                "name": "最終同期"
+            },
+            "update_source": {
+                "name": "更新元"
+            },
+            "workout_full_recovery_time": {
+                "name": "完全回復時間"
+            },
+            "screen_brightness": {
+                "name": "画面の明るさ"
+            },
+            "device_name": {
+                "name": "デバイスモデル"
+            },
+            "user_nick_name": {
+                "name": "ユーザーニックネーム"
+            },
+            "disk_free": {
+                "name": "空きストレージ"
+            },
+            "disk_total": {
+                "name": "総ストレージ"
+            },
             "wear": {
                 "name": "装着状態",
                 "state": {
@@ -176,6 +206,33 @@
             },
             "system_mode_ultra_power_saving": {
                 "name": "超省エネモード"
+            },
+            "screen_aod_mode": {
+                "name": "常時表示"
+            },
+            "is_sleeping": {
+                "name": "睡眠中"
+            },
+            "is_moving": {
+                "name": "移動中"
+            },
+            "device_nfc": {
+                "name": "NFC"
+            },
+            "device_mic": {
+                "name": "マイク"
+            },
+            "device_crown": {
+                "name": "クラウンボタン"
+            },
+            "device_buzzer": {
+                "name": "ブザー"
+            },
+            "device_speaker": {
+                "name": "スピーカー"
+            },
+            "update_pending": {
+                "name": "アップデート利用可能"
             }
         }
     }

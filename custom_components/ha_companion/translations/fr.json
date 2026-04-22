@@ -151,6 +151,36 @@
             "min_api": {
                 "name": "API minimale"
             },
+            "app_version": {
+                "name": "Version de l'app"
+            },
+            "published_version": {
+                "name": "Version publiée"
+            },
+            "record_time": {
+                "name": "Dernière synchronisation"
+            },
+            "update_source": {
+                "name": "Source de mise à jour"
+            },
+            "workout_full_recovery_time": {
+                "name": "Temps de récupération total"
+            },
+            "screen_brightness": {
+                "name": "Luminosité de l'écran"
+            },
+            "device_name": {
+                "name": "Modèle de l'appareil"
+            },
+            "user_nick_name": {
+                "name": "Pseudo utilisateur"
+            },
+            "disk_free": {
+                "name": "Stockage libre"
+            },
+            "disk_total": {
+                "name": "Stockage total"
+            },
             "wear": {
                 "name": "Statut du port",
                 "state": {
@@ -176,6 +206,33 @@
             },
             "system_mode_ultra_power_saving": {
                 "name": "Mode Ultra Économie d'énergie"
+            },
+            "screen_aod_mode": {
+                "name": "Écran toujours actif"
+            },
+            "is_sleeping": {
+                "name": "En train de dormir"
+            },
+            "is_moving": {
+                "name": "En mouvement"
+            },
+            "device_nfc": {
+                "name": "NFC"
+            },
+            "device_mic": {
+                "name": "Microphone"
+            },
+            "device_crown": {
+                "name": "Bouton couronne"
+            },
+            "device_buzzer": {
+                "name": "Vibreur"
+            },
+            "device_speaker": {
+                "name": "Haut-parleur"
+            },
+            "update_pending": {
+                "name": "Mise à jour disponible"
             }
         }
     }
