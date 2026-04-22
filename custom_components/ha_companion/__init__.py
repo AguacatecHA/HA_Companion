@@ -13,7 +13,7 @@ _LOGGER = logging.getLogger(__name__)
 DOMAIN = "ha_companion"
 
 VERSION_JSON_URL = (
-    "https://raw.githubusercontent.com/AguacatecHA/HA_Companion/main/Integracion/version.json"
+    "https://raw.githubusercontent.com/AguacatecHA/HA_Companion/refs/heads/main/version.jsonn"
 )
 VERSION_UPDATE_INTERVAL = timedelta(hours=1)
 
