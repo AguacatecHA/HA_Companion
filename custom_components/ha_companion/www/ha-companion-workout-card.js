@@ -8,6 +8,10 @@
  * lo único que existe de verdad — cuándo y cuánto — y lo acompaña con los
  * agregados del reloj (carga, VO2 máx, recuperación).
  *
+ * El nombre del deporte (`w.sport`) ya llega traducido desde Python
+ * (SPORT_TYPE_LABELS, según el idioma de la instancia) — aquí no hace falta
+ * tocarlo, solo los rótulos propios de la tarjeta.
+ *
  * config:
  *   type: custom:ha-companion-workout-card
  *   entity: sensor.<algo>_recent_workouts        (obligatorio, atributo `workouts`)
@@ -20,20 +24,89 @@
 
 const TAG = "ha-companion-workout-card";
 
-// Un color por familia de deporte; el resto cae en el neutro.
+const SOPORTADOS = ["es", "en", "fr", "de", "it"];
+const idioma = (hass) => {
+  const l = String((hass && (hass.language || (hass.locale && hass.locale.language))) || "en").toLowerCase().slice(0, 2);
+  return SOPORTADOS.includes(l) ? l : "en";
+};
+
+// Un color por familia de deporte; el resto cae en el neutro. Se compara
+// contra el nombre en inglés del SDK (SPORT_TYPES), que es estable
+// independientemente del idioma de visualización — ver sensor.py: `_sport_name`
+// localiza el nombre pero el patrón de familia (walk/run/cycl...) es el mismo
+// texto en inglés de origen.
 const COLORES = [
   { re: /walk|hiking|trek/i,               color: "#5B8DEF" },
   { re: /run|jog|treadmill/i,              color: "#F0A030" },
   { re: /cycl|bike|riding/i,               color: "#34C77B" },
   { re: /swim|pool/i,                      color: "#22B8CF" },
-  { re: /strength|gym|weight|training/i,   color: "#A78BFA" },
+  { re: /strength|gym|weight|training|fuerza/i, color: "#A78BFA" },
   { re: /yoga|pilates|stretch/i,           color: "#E86FA9" },
 ];
 const NEUTRO = "#64748B";
 const color = (deporte) =>
   (COLORES.find((c) => c.re.test(deporte || "")) || {}).color || NEUTRO;
 
-const DIAS = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
+const DIAS = {
+  es: ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"],
+  en: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+  fr: ["dim", "lun", "mar", "mer", "jeu", "ven", "sam"],
+  de: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
+  it: ["dom", "lun", "mar", "mer", "gio", "ven", "sab"],
+};
+
+const T = {
+  es: {
+    faltaEntity: "Falta `entity`: el sensor de entrenamientos recientes",
+    noExiste: (e) => `No existe ${e}`,
+    sinDatos: "Todavía no hay entrenamientos.",
+    sesion: (n) => (n === 1 ? "sesión" : "sesiones"),
+    enDias: (n) => `en ${n} días`,
+    carga: "carga de entreno",
+    vo2max: "VO₂ máx",
+    recuperacion: "h de recuperación",
+  },
+  en: {
+    faltaEntity: "Missing `entity`: the recent workouts sensor",
+    noExiste: (e) => `${e} doesn't exist`,
+    sinDatos: "No workouts yet.",
+    sesion: (n) => (n === 1 ? "session" : "sessions"),
+    enDias: (n) => `in ${n} days`,
+    carga: "training load",
+    vo2max: "VO₂ max",
+    recuperacion: "h recovery",
+  },
+  fr: {
+    faltaEntity: "`entity` manquant : le capteur des entraînements récents",
+    noExiste: (e) => `${e} n'existe pas`,
+    sinDatos: "Pas encore d'entraînements.",
+    sesion: (n) => (n === 1 ? "séance" : "séances"),
+    enDias: (n) => `en ${n} jours`,
+    carga: "charge d'entraînement",
+    vo2max: "VO₂ max",
+    recuperacion: "h de récupération",
+  },
+  de: {
+    faltaEntity: "`entity` fehlt: der Sensor für letzte Trainings",
+    noExiste: (e) => `${e} existiert nicht`,
+    sinDatos: "Noch keine Trainings.",
+    sesion: (n) => (n === 1 ? "Einheit" : "Einheiten"),
+    enDias: (n) => `in ${n} Tagen`,
+    carga: "Trainingsbelastung",
+    vo2max: "VO₂ max",
+    recuperacion: "Std. Erholung",
+  },
+  it: {
+    faltaEntity: "`entity` mancante: il sensore degli allenamenti recenti",
+    noExiste: (e) => `${e} non esiste`,
+    sinDatos: "Ancora nessun allenamento.",
+    sesion: (n) => (n === 1 ? "sessione" : "sessioni"),
+    enDias: (n) => `in ${n} giorni`,
+    carga: "carico di allenamento",
+    vo2max: "VO₂ max",
+    recuperacion: "h di recupero",
+  },
+};
 
 const ESTILOS = `
   :host { display: block; }
@@ -98,7 +171,7 @@ class HaCompanionWorkoutCard extends HTMLElement {
 
   setConfig(config) {
     if (!config || !config.entity) {
-      throw new Error("Falta `entity`: el sensor de entrenamientos recientes");
+      throw new Error("Missing `entity`: the recent workouts sensor");
     }
     this._config = config;
     this._pintado = null;
@@ -115,7 +188,7 @@ class HaCompanionWorkoutCard extends HTMLElement {
   set hass(hass) {
     this._hass = hass;
     const st = hass.states[this._config.entity];
-    const huella = st ? `${st.state}|${st.last_updated}` : "sin-entidad";
+    const huella = `${idioma(hass)}|` + (st ? `${st.state}|${st.last_updated}` : "sin-entidad");
     if (huella === this._pintado) return;
     this._pintado = huella;
     this._render();
@@ -132,13 +205,16 @@ class HaCompanionWorkoutCard extends HTMLElement {
   }
 
   _render() {
+    const lang = idioma(this._hass);
+    const t = T[lang];
+    const dias7 = DIAS[lang];
     const c = this._card;
     c.innerHTML = "";
     if (this._config.title) c.setAttribute("header", this._config.title);
 
     const st = this._hass.states[this._config.entity];
     if (!st) {
-      c.innerHTML = `<div class="error">No existe ${this._config.entity}</div>`;
+      c.innerHTML = `<div class="error">${t.noExiste(this._config.entity)}</div>`;
       return;
     }
 
@@ -148,7 +224,7 @@ class HaCompanionWorkoutCard extends HTMLElement {
       .filter((w) => !isNaN(w.d));
 
     if (!sesiones.length) {
-      c.innerHTML = `<div class="vacio">Todavía no hay entrenamientos.</div>`;
+      c.innerHTML = `<div class="vacio">${t.sinDatos}</div>`;
       return;
     }
 
@@ -164,8 +240,8 @@ class HaCompanionWorkoutCard extends HTMLElement {
     cab.className = "cab";
     cab.innerHTML =
       `<span class="total">${dur(total)}</span>` +
-      `<span class="sub">${enRango.length} ${enRango.length === 1 ? "sesión" : "sesiones"}` +
-      ` en ${dias} días</span>`;
+      `<span class="sub">${enRango.length} ${t.sesion(enRango.length)}` +
+      ` ${t.enDias(dias)}</span>`;
     c.appendChild(cab);
 
     // ---- una fila por día, la sesión colocada a su hora real -------------
@@ -182,7 +258,7 @@ class HaCompanionWorkoutCard extends HTMLElement {
 
       const f = document.createElement("div");
       f.className = "fecha";
-      f.innerHTML = `${DIAS[dia.getDay()]} <b>${dia.getDate()}</b>`;
+      f.innerHTML = `${dias7[dia.getDay()]} <b>${dia.getDate()}</b>`;
 
       const pista = document.createElement("div");
       pista.className = "pista" + (i === 0 ? " hoy" : "");
@@ -249,9 +325,9 @@ class HaCompanionWorkoutCard extends HTMLElement {
       d.innerHTML = `<b>${v}</b><span>${etiqueta}</span>`;
       pie.appendChild(d);
     };
-    add(carga, "carga de entreno");
-    add(vo2, "VO₂ máx");
-    add(rec, "h de recuperación");
+    add(carga, t.carga);
+    add(vo2, t.vo2max);
+    add(rec, t.recuperacion);
     if (pie.children.length) c.appendChild(pie);
   }
 }
@@ -264,8 +340,8 @@ const definir = () => {
   if (!window.customCards.some((c) => c.type === TAG)) {
     window.customCards.push({
       type: TAG,
-      name: "HA Companion · Entrenamientos",
-      description: "Historial de entrenamientos del reloj, colocados a su hora real.",
+      name: "HA Companion · Workouts",
+      description: "Workout history, placed at their real time of day.",
       preview: false,
     });
   }
@@ -280,6 +356,6 @@ const reintento = setInterval(() => {
   if (++intentos >= 60) clearInterval(reintento);
 }, 250);
 
-console.info("%c HA-COMPANION-WORKOUT-CARD %c v1.0.0 ",
+console.info("%c HA-COMPANION-WORKOUT-CARD %c v1.1.0 ",
   "color:#fff;background:#34C77B;font-weight:700",
   "color:#34C77B;background:#fff");

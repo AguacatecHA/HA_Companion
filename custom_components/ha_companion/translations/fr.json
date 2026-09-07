@@ -189,6 +189,15 @@
                     "in_motion": "En mouvement",
                     "not_sure": "Indéterminé"
                 }
+            },
+            "workout_history": {
+                "name": "Entraînements récents"
+            },
+            "sleep_timeline": {
+                "name": "Chronologie du sommeil"
+            },
+            "sync_age": {
+                "name": "Ancienneté de la synchro"
             }
         },
         "binary_sensor": {
@@ -233,7 +242,30 @@
             },
             "update_pending": {
                 "name": "Mise à jour disponible"
+            },
+            "is_charging": {
+                "name": "En charge"
             }
+        },
+        "device_tracker": {
+            "watch_location": {
+                "name": "Position de la montre"
+            }
+        }
+    },
+    "device_automation": {
+        "trigger_type": {
+            "fell_asleep": "{entity_name} détecte que je me suis endormi",
+            "woke_up": "{entity_name} détecte que je me suis réveillé",
+            "started_moving": "{entity_name} détecte que je me suis mis en mouvement",
+            "stopped_moving": "{entity_name} détecte que je me suis arrêté",
+            "charging_started": "{entity_name} a commencé à charger",
+            "charging_stopped": "{entity_name} a arrêté de charger",
+            "watch_worn": "J'ai mis {entity_name}",
+            "watch_removed": "J'ai retiré {entity_name}",
+            "update_available": "{entity_name} a une mise à jour disponible",
+            "battery_low": "{entity_name} est bientôt à court de batterie",
+            "sync_lost": "{entity_name} n'est pas synchronisé depuis trop longtemps"
         }
     }
 }

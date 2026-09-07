@@ -244,8 +244,9 @@ class WatchSensor(SensorEntity):
         nombre = SPORT_TYPES.get(code)
         if nombre is not None:
             return self._sport_label(nombre)
-        lang = str(self.hass.config.language or "en").lower()
-        return f"Deporte {code}" if lang.startswith("es") else f"Sport {code}"
+        lang = str(self.hass.config.language or "en").lower()[:2]
+        word = {"es": "Deporte", "fr": "Sport", "de": "Sportart", "it": "Sport"}.get(lang, "Sport")
+        return f"{word} {code}"
 
     def _sport_label(self, nombre: str) -> str:
         """Localize a sport name to the instance's language.
@@ -255,10 +256,10 @@ class WatchSensor(SensorEntity):
         next to everything else translated. Anything missing from the table
         stays in English rather than breaking.
         """
-        lang = str(self.hass.config.language or "en").lower()
-        if not lang.startswith("es"):
+        lang = str(self.hass.config.language or "en").lower()[:2]
+        if lang not in SPORT_TYPE_LABELS:
             return nombre
-        return SPORT_TYPE_LABELS["es"].get(nombre, nombre)
+        return SPORT_TYPE_LABELS[lang].get(nombre, nombre)
 
     def _extract_sleep_stage(self, attr_value):
         """Calcula minutos totales de cada fase de sueño."""
@@ -577,109 +578,6 @@ class WatchWorkoutHistorySensor(WatchSensor):
         return {"recent_workouts": self._recent_workouts, "workouts": self._workouts}
 
 
-class WatchSleepTimelineSensor(WatchSensor):
-    """Sensor whose state is the total minutes of the last sleep session (sum of every
-    segment's duration_min — a bare segment count meant nothing on a dashboard, a real
-    user confirmed it was confusing). extra_state_attributes.timeline lists each
-    segment (phase name + start/stop HH:MM + duration_min) plus segment_count, built
-    from the same raw sleep_stage_data the sleep_*_minutes sensors already sum — no
-    watch-side change needed."""
-
-    def __init__(self, hass, entry_id, username, master_sensor_id, sensor_config):
-        super().__init__(hass, entry_id, username, master_sensor_id, sensor_config)
-        self._timeline: list = []
-        self._model_to_name: dict = {}
-
-    def _refresh_model_names(self) -> None:
-        """(Re)build the model-id -> stage-name map from the master's sleep_stage_constant,
-        cached the same way _extract_sleep_stage does."""
-        master_state = self.hass.states.get(self._master_sensor_id)
-        if not master_state:
-            return
-        raw_constants = master_state.attributes.get("sleep_stage_constant")
-        if raw_constants is None or raw_constants == self._cached_raw_constants:
-            return
-        try:
-            constants = json.loads(raw_constants) if isinstance(raw_constants, str) else raw_constants
-            if not isinstance(constants, dict):
-                return
-            self._cached_constants = constants
-            self._cached_raw_constants = raw_constants
-            self._model_to_name = {v: k for k, v in constants.items()}
-        except Exception as e:
-            _LOGGER.warning(f"[sleep_timeline] constants parse error: {e}")
-
-    @staticmethod
-    def _to_hhmm(minutes_since_midnight) -> str:
-        m = int(minutes_since_midnight) % (24 * 60)
-        return f"{m // 60:02d}:{m % 60:02d}"
-
-    def _phase_label(self, stage_name: str) -> str:
-        """Localize a raw stage constant name (WAKE_STAGE, ...) to the instance's
-        configured language. Falls back to English, then to the raw name itself for
-        anything not in SLEEP_PHASE_LABELS (e.g. the "Unknown (N)" placeholder)."""
-        lang = str(self.hass.config.language or "en").lower()
-        table = SLEEP_PHASE_LABELS.get("es" if lang.startswith("es") else "en", SLEEP_PHASE_LABELS["en"])
-        return table.get(stage_name, stage_name)
-
-    def _parse_timeline(self, attr_value) -> list:
-        try:
-            data = json.loads(attr_value) if isinstance(attr_value, str) else attr_value
-            if not isinstance(data, list):
-                return []
-            self._refresh_model_names()
-            result = []
-            for segment in data:
-                model = segment.get("model")
-                start = segment.get("start", 0)
-                stop = segment.get("stop", 0)
-                stage_name = self._model_to_name.get(model, f"Unknown ({model})")
-                result.append({
-                    "phase": self._phase_label(stage_name),
-                    "start": self._to_hhmm(start),
-                    "stop": self._to_hhmm(stop),
-                    "duration_min": stop - start,
-                })
-            return result
-        except Exception as e:
-            _LOGGER.warning(f"[sleep_timeline] parse error: {e}")
-            return []
-
-    @callback
-    def _handle_master_update(self, event) -> None:
-        new_state = event.data.get("new_state")
-        if new_state is None:
-            self._attr_available = False
-            self.async_write_ha_state()
-            return
-        attr_value = new_state.attributes.get("sleep_stage_data")
-        if attr_value is None:
-            self._attr_available = False
-            self.async_write_ha_state()
-            return
-        self._timeline = self._parse_timeline(attr_value)
-        self._attr_native_value = self._total_minutes()
-        self._attr_available = True
-        self.async_write_ha_state()
-
-    async def async_added_to_hass(self) -> None:
-        await super().async_added_to_hass()
-        master_state = self.hass.states.get(self._master_sensor_id)
-        if master_state:
-            attr_value = master_state.attributes.get("sleep_stage_data")
-            if attr_value is not None:
-                self._timeline = self._parse_timeline(attr_value)
-                self._attr_native_value = self._total_minutes()
-                self._attr_available = True
-
-    def _total_minutes(self) -> int:
-        return sum(segment["duration_min"] for segment in self._timeline)
-
-    @property
-    def extra_state_attributes(self) -> dict:
-        return {"timeline": self._timeline, "segment_count": len(self._timeline)}
-
-
 class WatchSyncAgeSensor(WatchSensor):
     """Minutes since the watch last pushed data.
 
@@ -784,8 +682,8 @@ class WatchSleepTimelineSensor(WatchSensor):
         """Localize a raw stage constant name (WAKE_STAGE, ...) to the instance's
         configured language. Falls back to English, then to the raw name itself for
         anything not in SLEEP_PHASE_LABELS (e.g. the "Unknown (N)" placeholder)."""
-        lang = str(self.hass.config.language or "en").lower()
-        table = SLEEP_PHASE_LABELS.get("es" if lang.startswith("es") else "en", SLEEP_PHASE_LABELS["en"])
+        lang = str(self.hass.config.language or "en").lower()[:2]
+        table = SLEEP_PHASE_LABELS.get(lang, SLEEP_PHASE_LABELS["en"])
         return table.get(stage_name, stage_name)
 
     def _parse_timeline(self, attr_value) -> list:
@@ -802,6 +700,12 @@ class WatchSleepTimelineSensor(WatchSensor):
                 stage_name = self._model_to_name.get(model, f"Unknown ({model})")
                 result.append({
                     "phase": self._phase_label(stage_name),
+                    # `phase` is for display and changes with the language; `stage` is
+                    # for comparing and is always the watch's own constant
+                    # (WAKE_STAGE/REM_STAGE/LIGHT_STAGE/DEEP_STAGE), never translated.
+                    # Same lesson as entity_id vs unique_id: what's shown can't be
+                    # what's compared.
+                    "stage": stage_name,
                     "start": self._to_hhmm(start),
                     "stop": self._to_hhmm(stop),
                     "duration_min": stop - start,

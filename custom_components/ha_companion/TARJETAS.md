@@ -94,6 +94,27 @@ score_entity: sensor.amazfit_balance_jesus     # opcional
 atributo `sleep_info`, que **llega como cadena JSON, no como diccionario**. La
 tarjeta lo parsea; si escribes tú una plantilla, acuérdate de `from_json`.
 
+**El número grande es el tiempo DORMIDO, no el intervalo en cama.** Un usuario
+real señaló que la cabecera decía "8h 38" mientras la leyenda de abajo admitía
+"Despierto · 67 min · 13%" — contradictorio a simple vista. El número grande
+resta los tramos de fase despierta (`FASE_CANON` normalizado a `"AWAKE"`); el
+intervalo completo en cama (con los despertares incluidos) se queda, pero
+pequeño, junto a la hora de inicio/fin. La leyenda de reparto por fases no
+cambia: sigue mostrando el porcentaje de cada una sobre el total en cama, así
+que "Despierto · 13%" ahora es coherente con el número de arriba en vez de
+contradecirlo.
+
+Ojo: **el estado del sensor `sleep_timeline` no ha cambiado**, sigue siendo la
+suma de todos los tramos (incluida la fase despierta) — cambiar el estado
+rompería el histórico de quien ya lo tenga grabado en el recorder. Esto es
+puramente un cálculo del lado de la tarjeta, a partir del atributo `timeline`.
+
+Comprobado que `sleep_info.totalTime` (el campo que manda el propio Zepp) **no
+sirve como referencia**: es literalmente `endTime − startTime`, ni siquiera
+descuenta los despertares — no es "el cálculo de sueño de Zepp", es solo el
+intervalo. Verificado con datos reales: una noche con 546 min de `totalTime`
+no coincidía ni con 451 (dormido) ni con 518 (en cama).
+
 ---
 
 ## `ha-companion-sleep-week-card` — la semana
@@ -103,19 +124,49 @@ Una columna por noche, apiladas por fase, con la media arriba.
 ```yaml
 type: custom:ha-companion-sleep-week-card
 prefix: sensor.balance_jesus
-score_entity: sensor.balance_jesus_puntuacion_del_sueno   # opcional
-days: 7                                                   # opcional
+score_entity: sensor.balance_jesus_puntuacion_del_sueno         # opcional
+timeline_entity: sensor.balance_jesus_cronologia_del_sueno      # opcional
+days: 7                                                          # opcional
 ```
 
 | Opción | Obligatoria | Qué es |
 |---|---|---|
 | `prefix` | sí\* | Prefijo de tus sensores; de ahí compone `_sueno_profundo`, `_sueno_rem`, `_sueno_ligero` y `_tiempo_despierto` |
-| `entities` | sí\* | Alternativa a `prefix`: `{Profundo: sensor.x, REM: ..., Ligero: ..., Despierto: ...}`. Es lo que usa el panel, que resuelve los ids por `unique_id` y no depende del idioma |
+| `entities` | sí\* | Alternativa a `prefix`: `{DEEP: sensor.x, REM: ..., LIGHT: ..., AWAKE: ...}` — claves internas fijas, no traducidas. Es lo que usa el panel, que resuelve los ids por `unique_id` y no depende del idioma |
 | `score_entity` | no | Puntuación del sueño, se pinta bajo cada columna |
+| `timeline_entity` | no | El sensor de cronología del sueño. Sin él las columnas no son pulsables |
 | `days` | no | Cuántas noches, 7 por defecto |
 | `title` | no | Cabecera de la tarjeta |
 
 \* Hace falta uno de los dos, `prefix` o `entities`.
+
+**Pulsar una noche con datos abre un hipnograma** de esa noche en concreto,
+igual que `ha-companion-sleep-card` pero fijado a ese día — es la petición de
+un usuario real, que quería poder mirar el detalle de una noche pasada sin
+esperar a que fuera "la última". No sale de las estadísticas (que solo dan
+los totales por fase), sino de `history/history_during_period` sobre
+`timeline_entity`: pide el ESTADO (con sus atributos completos) del final de
+ese día, con el mismo corte de las 13:00 que agrupó la columna, y pinta su
+atributo `timeline` tal cual estaba en ese momento.
+
+Dos límites de esto, por cómo funciona el historial de estados de HA (no las
+estadísticas a largo plazo, que no guardan el detalle):
+
+- Solo funciona mientras ese día no se haya purgado del historial de estados
+  (por defecto **10 días**; si el usuario ha bajado esa retención, menos).
+  Pasado ese plazo, el modal avisa de que no hay detalle guardado en vez de
+  fallar en silencio.
+- **El historial de estados es un museo**: guarda lo que la integración
+  escribía en cada momento, no lo que escribe hoy. Verificado con datos reales
+  que el atributo `timeline` ha tenido tres formas a lo largo del tiempo —
+  clave cruda del reloj sin traducir (`"LIGHT_STAGE"`, de antes de que
+  existiera la traducción), texto ya traducido (`"Sueño Ligero"`) y, por
+  último, las dos cosas a la vez más `stage`. La fase se reconoce probando las
+  tres, en este orden: `stage` (si el tramo lo trae), el texto traducido
+  (`FASE_CANON`) y, si tampoco encaja, la propia clave cruda por si `phase`
+  fuera de la primera época. Sin este último paso, un tramo antiguo de la fase
+  despierta se contaba como dormido — bug real, encontrado contra historial de
+  verdad, no con datos simulados.
 
 No necesita nada nuevo de la integración: esos sensores llevan
 `state_class: measurement`, así que **el recorder ya les genera estadísticas

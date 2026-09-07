@@ -7,6 +7,14 @@
  * todos los atributos `style`, así que las barras se quedaban en texto plano.
  * Aquí pintamos directamente en el DOM de la tarjeta, sin saneado de por medio.
  *
+ * El atributo `phase` de cada tramo ya llega LOCALIZADO desde Python
+ * (SLEEP_PHASE_LABELS, según el idioma de la instancia) — puede ser "Despierto"
+ * o "Awake" según toque. Por eso el reconocimiento de fase pasa siempre por
+ * FASE_CANON antes de nada: normaliza cualquiera de los dos idiomas a un código
+ * interno fijo, y solo AHÍ se decide en qué idioma se pinta la tarjeta
+ * (`hass.language`, que puede no coincidir con el de la instancia si el
+ * usuario tiene su perfil en otro idioma).
+ *
  * config:
  *   type: custom:ha-companion-sleep-card
  *   entity: sensor.<algo>_cronologia_del_sueno   (obligatorio)
@@ -14,13 +22,75 @@
  *   title: Anoche                                (opcional)
  */
 
-const FASES = [
-  { clave: "Despierto",      color: "#F0A030", corto: "Despierto" },
-  { clave: "REM",            color: "#A78BFA", corto: "REM" },
-  { clave: "Sueño Ligero",   color: "#5B8DEF", corto: "Ligero" },
-  { clave: "Sueño Profundo", color: "#3D5AAF", corto: "Profundo" },
-];
+const SOPORTADOS = ["es", "en", "fr", "de", "it"];
+const idioma = (hass) => {
+  const l = String((hass && (hass.language || (hass.locale && hass.locale.language))) || "en").toLowerCase().slice(0, 2);
+  return SOPORTADOS.includes(l) ? l : "en";
+};
+
+// Normaliza el texto de fase (en cualquiera de los 5 idiomas que manda el
+// servidor) a un código interno. Lo que no se reconozca cae en su propio
+// texto tal cual.
+const FASE_CANON = {
+  Despierto: "AWAKE", Awake: "AWAKE", Éveillé: "AWAKE", Wach: "AWAKE", Sveglio: "AWAKE",
+  REM: "REM",
+  "Sueño Ligero": "LIGHT", "Light Sleep": "LIGHT", "Sommeil léger": "LIGHT",
+  "Leichter Schlaf": "LIGHT", "Sonno leggero": "LIGHT",
+  "Sueño Profundo": "DEEP", "Deep Sleep": "DEEP", "Sommeil profond": "DEEP",
+  "Tiefschlaf": "DEEP", "Sonno profondo": "DEEP",
+};
+// Por si algún día `phase` llegara con la clave cruda del reloj sin traducir
+// (nunca debería, en el estado en vivo, pero es el mismo hueco que sí se vio
+// en el historial de la tarjeta semanal — mejor cubrirlo aquí también).
+const STAGE_CANON = { WAKE_STAGE: "AWAKE", REM_STAGE: "REM", LIGHT_STAGE: "LIGHT", DEEP_STAGE: "DEEP" };
+const FASE_COLOR = { AWAKE: "#F0A030", REM: "#A78BFA", LIGHT: "#5B8DEF", DEEP: "#3D5AAF" };
+const FASE_ORDEN = ["AWAKE", "REM", "LIGHT", "DEEP"];
+const FASE_CORTO = {
+  es: { AWAKE: "Despierto", REM: "REM", LIGHT: "Ligero", DEEP: "Profundo" },
+  en: { AWAKE: "Awake", REM: "REM", LIGHT: "Light", DEEP: "Deep" },
+  fr: { AWAKE: "Éveillé", REM: "REM", LIGHT: "Léger", DEEP: "Profond" },
+  de: { AWAKE: "Wach", REM: "REM", LIGHT: "Leicht", DEEP: "Tief" },
+  it: { AWAKE: "Sveglio", REM: "REM", LIGHT: "Leggero", DEEP: "Profondo" },
+};
 const COLOR_OTRO = "#64748B";
+
+const T = {
+  es: {
+    faltaEntity: "Falta `entity`: el sensor de cronología del sueño",
+    noExiste: (e) => `No existe ${e}`,
+    sinDatos: "Todavía no hay datos de sueño.",
+    puntos: "puntos",
+    enCama: "en cama",
+  },
+  en: {
+    faltaEntity: "Missing `entity`: the sleep timeline sensor",
+    noExiste: (e) => `${e} doesn't exist`,
+    sinDatos: "No sleep data yet.",
+    puntos: "points",
+    enCama: "in bed",
+  },
+  fr: {
+    faltaEntity: "`entity` manquant : le capteur de chronologie du sommeil",
+    noExiste: (e) => `${e} n'existe pas`,
+    sinDatos: "Pas encore de données de sommeil.",
+    puntos: "points",
+    enCama: "au lit",
+  },
+  de: {
+    faltaEntity: "`entity` fehlt: der Schlafverlauf-Sensor",
+    noExiste: (e) => `${e} existiert nicht`,
+    sinDatos: "Noch keine Schlafdaten.",
+    puntos: "Punkte",
+    enCama: "im Bett",
+  },
+  it: {
+    faltaEntity: "`entity` mancante: il sensore della cronologia del sonno",
+    noExiste: (e) => `${e} non esiste`,
+    sinDatos: "Ancora nessun dato sul sonno.",
+    puntos: "punti",
+    enCama: "a letto",
+  },
+};
 
 const ESTILOS = `
   :host { display: block; }
@@ -91,7 +161,7 @@ class HaCompanionSleepCard extends HTMLElement {
 
   setConfig(config) {
     if (!config || !config.entity) {
-      throw new Error("Falta `entity`: el sensor de cronología del sueño");
+      throw new Error("Missing `entity`: the sleep timeline sensor");
     }
     this._config = config;
     this._pintado = null;
@@ -113,7 +183,7 @@ class HaCompanionSleepCard extends HTMLElement {
     const st = hass.states[this._config.entity];
     // Repintar solo si cambió algo: el hipnograma es caro y `hass` llega a
     // cada cambio de estado de la casa entera.
-    const huella = st ? `${st.state}|${st.last_updated}` : "sin-entidad";
+    const huella = `${idioma(hass)}|` + (st ? `${st.state}|${st.last_updated}` : "sin-entidad");
     if (huella === this._pintado) return;
     this._pintado = huella;
     this._render(st);
@@ -135,18 +205,22 @@ class HaCompanionSleepCard extends HTMLElement {
   }
 
   _render(st) {
+    const lang = idioma(this._hass);
+    const t = T[lang];
+    const corto = FASE_CORTO[lang];
     const c = this._card;
     c.innerHTML = "";
     if (this._config.title) c.setAttribute("header", this._config.title);
 
     if (!st) {
-      c.innerHTML = `<div class="error">No existe ${this._config.entity}</div>`;
+      c.innerHTML = `<div class="error">${t.noExiste(this._config.entity)}</div>`;
       return;
     }
 
     const tramos = (st.attributes.timeline || [])
       .map((x) => ({
-        fase: x.phase,
+        fase: FASE_CANON[x.phase] || STAGE_CANON[x.phase] || x.phase,
+        stage: x.stage,   // clave estable del reloj (WAKE_STAGE...), no traducida
         ini: aMinutos(x.start),
         fin: aMinutos(x.stop),
         min: Number(x.duration_min) || 0,
@@ -156,11 +230,24 @@ class HaCompanionSleepCard extends HTMLElement {
       .filter((x) => x.min > 0);
 
     if (!tramos.length) {
-      c.innerHTML = `<div class="vacio">Todavía no hay datos de sueño.</div>`;
+      c.innerHTML = `<div class="vacio">${t.sinDatos}</div>`;
       return;
     }
 
     const total = tramos.reduce((a, x) => a + x.min, 0);
+    // Dormido de verdad = todo menos los tramos despierto. El número grande de
+    // la cabecera es este, no el intervalo completo en cama: un usuario real
+    // señaló que "8h 38" arriba y "Despierto · 67 min · 13%" en la leyenda de
+    // debajo se contradecían — 67 min despierto no pueden estar "dormidos".
+    // El intervalo completo en cama se queda, pero pequeño, junto a la hora.
+    //
+    // Se compara por `stage` (WAKE_STAGE, estable, no traducido) cuando existe;
+    // si el sensor todavía no lo manda (integración sin actualizar), se cae al
+    // `fase` ya canonicalizada por FASE_CANON — verificado que también acierta,
+    // pero `stage` no depende de mantener esa tabla sincronizada con
+    // SLEEP_PHASE_LABELS a mano.
+    const esDespierto = (x) => (x.stage ? x.stage === "WAKE_STAGE" : x.fase === "AWAKE");
+    const dormido = tramos.filter((x) => !esDespierto(x)).reduce((a, x) => a + x.min, 0);
     const inicio = tramos[0].ini ?? 0;
     const score = this._puntuacion();
 
@@ -168,19 +255,21 @@ class HaCompanionSleepCard extends HTMLElement {
     const cab = document.createElement("div");
     cab.className = "cab";
     cab.innerHTML =
-      `<span class="total">${duracion(total)}</span>` +
-      `<span class="rango">${tramos[0].start} → ${tramos[tramos.length - 1].stop}</span>` +
+      `<span class="total">${duracion(dormido)}</span>` +
+      `<span class="rango">${tramos[0].start} → ${tramos[tramos.length - 1].stop} · ${duracion(total)} ${t.enCama}</span>` +
       (score != null
-        ? `<span class="marca"><b>${score}</b>puntos</span>`
+        ? `<span class="marca"><b>${score}</b>${t.puntos}</span>`
         : "");
     c.appendChild(cab);
 
     // ---- hipnograma -----------------------------------------------------
-    const presentes = FASES.filter((f) => tramos.some((t) => t.fase === f.clave));
-    const otras = [...new Set(tramos.map((t) => t.fase))]
-      .filter((f) => !FASES.some((x) => x.clave === f))
-      .map((f) => ({ clave: f, color: COLOR_OTRO, corto: f }));
-    const niveles = [...presentes, ...otras];
+    const presentes = FASE_ORDEN.filter((f) => tramos.some((t2) => t2.fase === f));
+    const otras = [...new Set(tramos.map((t2) => t2.fase))]
+      .filter((f) => !FASE_ORDEN.includes(f));
+    const niveles = [
+      ...presentes.map((f) => ({ clave: f, color: FASE_COLOR[f], corto: corto[f] })),
+      ...otras.map((f) => ({ clave: f, color: COLOR_OTRO, corto: f })),
+    ];
 
     const ALTO_FILA = 22, HUECO = 6;
     const alto = niveles.length * ALTO_FILA + (niveles.length - 1) * HUECO;
@@ -211,19 +300,19 @@ class HaCompanionSleepCard extends HTMLElement {
     });
 
     let acumulado = 0;
-    tramos.forEach((t) => {
-      const fila = niveles.findIndex((n) => n.clave === t.fase);
+    tramos.forEach((t2) => {
+      const fila = niveles.findIndex((n) => n.clave === t2.fase);
       const color = (niveles[fila] || {}).color || COLOR_OTRO;
       const d = document.createElement("div");
       d.className = "tramo";
       d.style.left = `${(acumulado / total) * 100}%`;
-      d.style.width = `${Math.max((t.min / total) * 100, 0.4)}%`;
+      d.style.width = `${Math.max((t2.min / total) * 100, 0.4)}%`;
       d.style.top = `${Math.max(fila, 0) * (ALTO_FILA + HUECO)}px`;
       d.style.height = `${ALTO_FILA}px`;
       d.style.background = color;
-      d.title = `${t.fase} · ${t.start}–${t.stop} · ${t.min} min`;
+      d.title = `${(niveles[fila] || {}).corto || t2.fase} · ${t2.start}–${t2.stop} · ${t2.min} min`;
       lienzo.appendChild(d);
-      acumulado += t.min;
+      acumulado += t2.min;
     });
 
     graf.appendChild(etiq);
@@ -254,7 +343,7 @@ class HaCompanionSleepCard extends HTMLElement {
     const ley = document.createElement("div");
     ley.className = "leyenda";
     niveles.forEach((n) => {
-      const min = tramos.filter((t) => t.fase === n.clave)
+      const min = tramos.filter((t2) => t2.fase === n.clave)
                         .reduce((a, x) => a + x.min, 0);
       if (!min) return;
       const pct = (min / total) * 100;
@@ -289,8 +378,8 @@ const definir = () => {
   if (!window.customCards.some((c) => c.type === TAG)) {
     window.customCards.push({
       type: TAG,
-      name: "HA Companion · Sueño",
-      description: "Hipnograma de la última noche a partir de la cronología del sueño.",
+      name: "HA Companion · Sleep",
+      description: "Last night's hypnogram from the sleep timeline sensor.",
       preview: false,
     });
   }
@@ -303,6 +392,6 @@ const reintento = setInterval(() => {
   if (++intentos >= 60) clearInterval(reintento);   // 15 s y paramos
 }, 250);
 
-console.info("%c HA-COMPANION-SLEEP-CARD %c v1.1.0 ",
+console.info("%c HA-COMPANION-SLEEP-CARD %c v1.2.0 ",
   "color:#fff;background:#3D5AAF;font-weight:700",
   "color:#3D5AAF;background:#fff");

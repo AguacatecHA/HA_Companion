@@ -4,6 +4,44 @@ Todos los cambios notables de la integración **HA Companion** para Home Assista
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el versionado es [SemVer](https://semver.org/lang/es/).
 
+## [0.1.7] - Sin publicar
+
+### Añadido
+- **Panel y tarjetas en francés, alemán e italiano**, además de español e
+  inglés. Cualquier otro idioma sigue cayendo en inglés.
+- **Deportes traducidos también a francés, alemán e italiano** (además de
+  español), 180 en cada idioma.
+- **Pulsar una noche en `ha-companion-sleep-week-card` abre su hipnograma**,
+  igual que el de la última noche pero fijado a ese día — petición de un
+  usuario real. Usa el historial de estados de HA (`history/history_during_period`
+  sobre el sensor de cronología del sueño), no las estadísticas, así que solo
+  funciona mientras ese día no se haya purgado del historial (por defecto 10
+  días, menos si se ha bajado `purge_keep_days`); pasado ese plazo, avisa en
+  vez de fallar en silencio.
+- Deporte **Hyrox** (código 1222) añadido a la tabla.
+
+### Corregido
+- **"Entrenamiento de fuerza" acortado a "Fuerza"** en la traducción al
+  español — el nombre largo no cabía bien en las fichas.
+- **"Cross-training" se deja sin traducir** en español: la traducción
+  ("Entrenamiento cruzado") se confundía con CrossFit, que es un deporte
+  Zepp distinto.
+- **El número grande del hipnograma contaba el tiempo despierto como
+  dormido.** Un usuario real señaló que la cabecera decía «8h 38» mientras la
+  leyenda de debajo admitía «Despierto · 67 min · 13 %» — contradictorio.
+  Ahora el número grande es el tiempo dormido de verdad (descuenta los tramos
+  de fase despierta); el intervalo completo en cama se sigue viendo, pero
+  pequeño, junto a la hora. Cambio solo en la tarjeta: el estado del sensor
+  `sleep_timeline` no se toca, para no romper el histórico de nadie.
+- **El hipnograma de una noche pasada (tarjeta semanal) podía contar el
+  despertar como dormido.** El historial de estados de HA guarda lo que la
+  integración escribía en cada momento, y el atributo `timeline` ha tenido
+  tres formas distintas con el tiempo (clave cruda del reloj, texto ya
+  traducido, y ambas cosas junto a `stage`); un tramo antiguo con la clave
+  cruda sin traducir no se reconocía como fase despierta y se sumaba al
+  tiempo dormido. Verificado y corregido contra historial real, no con datos
+  de prueba.
+
 ## [0.1.6] - 2026-09-03
 
 ### Añadido
