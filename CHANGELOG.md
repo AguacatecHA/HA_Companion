@@ -31,6 +31,12 @@ y el versionado es [SemVer](https://semver.org/lang/es/).
   hubiera una segunda `lookup_table` — y lo hubo, la del estado del reloj
   (`WEAR_STATES`), añadida en la misma 0.1.6. Afecta a la 0.1.6 y la 0.1.7,
   las dos publicadas.
+- **Aviso "Removing unknown panel ha-companion" en el log de HA.** Lo
+  provocaba la propia integración: al registrar el panel se quita primero el
+  anterior, y si no había ninguno (primer arranque, o tras borrar y volver a
+  añadir la integración) HA lo avisaba con un WARNING. No indicaba ningún
+  fallo — reportado por un usuario real que lo confundió con la causa de que
+  no le llegaran datos. Ahora se pide explícitamente que no avise.
 - **Los blueprints no aparecían solos en Ajustes → Automatizaciones →
   Blueprints.** Reportado por varios usuarios reales. Nunca hubo un fallo
   puntual: Home Assistant no descubre blueprints por estar dentro de

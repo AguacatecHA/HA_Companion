@@ -245,7 +245,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if True:
         try:
             with contextlib.suppress(Exception):
-                frontend.async_remove_panel(hass, PANEL_URL_PATH)
+                # `warn_if_unknown=False`: en el primer arranque (o tras
+                # borrar y volver a añadir la integración) el panel aún no
+                # existe, y sin esto HA suelta un WARNING "Removing unknown
+                # panel ha-companion" que asusta y no significa nada. No
+                # lanza excepción, así que el suppress de arriba no bastaba.
+                frontend.async_remove_panel(hass, PANEL_URL_PATH, warn_if_unknown=False)
             # ha-panel-custom.ts del frontend lee los parámetros de carga de
             # `config._panel_custom`; las claves sueltas del primer nivel NO se
             # miran. El panel es un módulo más de www/, así que se sirve por la
