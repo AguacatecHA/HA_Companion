@@ -218,9 +218,12 @@ class WatchSensor(SensorEntity):
         elif self._config.get("lookup_table"):
             table = self._config["lookup_table"]
             try:
-                # La única lookup_table que existe es la de deportes; si algún
-                # día hay otra, esto tendrá que mirar la clave del sensor.
-                return self._sport_name(attr_value)
+                if self._config["key"] == "workout_last_sport_type":
+                    return self._sport_name(attr_value)
+                # Lookup genérica: código crudo -> clave de estado (p. ej.
+                # wear_state 1 -> "is_wearing"), que HA traduce igual que
+                # cualquier otro `state` de sensor vía translations/*.json.
+                return table.get(int(attr_value), str(attr_value))
             except (TypeError, ValueError):
                 return str(attr_value)
 

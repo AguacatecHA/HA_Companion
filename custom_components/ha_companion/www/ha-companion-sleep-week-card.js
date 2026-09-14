@@ -68,7 +68,7 @@ const FASE_NOMBRE = {
   it: { DEEP: "Profondo", REM: "REM", LIGHT: "Leggero", AWAKE: "Sveglio" },
 };
 const FASE_COLOR = { AWAKE: "#F0A030", REM: "#A78BFA", LIGHT: "#5B8DEF", DEEP: "#3D5AAF" };
-const FASE_ORDEN = ["AWAKE", "REM", "LIGHT", "DEEP"];
+const FASE_ORDEN = ["AWAKE", "LIGHT", "DEEP", "REM"];
 const COLOR_OTRO = "#64748B";
 
 // Respaldo por si el historial trae un timeline sin `stage` (sensor viejo):

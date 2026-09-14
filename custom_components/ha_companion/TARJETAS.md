@@ -81,18 +81,22 @@ porcentaje. Sale del atributo `timeline` del sensor de cronología del sueño.
 ```yaml
 type: custom:ha-companion-sleep-card
 entity: sensor.balance_jesus_cronologia_del_sueno
-score_entity: sensor.amazfit_balance_jesus     # opcional
+score_entity: sensor.balance_jesus_puntuacion_del_sueno     # opcional
 ```
 
 | Opción | Obligatoria | Qué es |
 |---|---|---|
 | `entity` | sí | El sensor de cronología del sueño |
-| `score_entity` | no | El sensor **maestro** del reloj, del que sale la puntuación |
+| `score_entity` | no | El sensor **Puntuación del sueño** (el mismo que usa la tarjeta semanal) |
 | `title` | no | Cabecera de la tarjeta |
 
-`score_entity` es el maestro, no un sensor de puntuación: la nota vive en su
-atributo `sleep_info`, que **llega como cadena JSON, no como diccionario**. La
-tarjeta lo parsea; si escribes tú una plantilla, acuérdate de `from_json`.
+`score_entity` acepta dos cosas — un usuario real había puesto el sensor de
+puntuación (el intuitivo, y el que ya pide la tarjeta semanal) y no le salía
+la nota, porque esta tarjeta solo miraba el sensor maestro:
+- El sensor dedicado **Puntuación del sueño**: se usa su propio estado tal cual.
+- El sensor **maestro** del reloj: la nota vive en su atributo `sleep_info`,
+  que llega como cadena JSON, no como diccionario — la tarjeta la parsea. Solo
+  hace falta esta opción si por lo que sea no tienes el sensor dedicado.
 
 **El número grande es el tiempo DORMIDO, no el intervalo en cama.** Un usuario
 real señaló que la cabecera decía "8h 38" mientras la leyenda de abajo admitía

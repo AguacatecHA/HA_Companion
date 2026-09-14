@@ -3,6 +3,7 @@ from __future__ import annotations
 import contextlib
 import logging
 import os
+import shutil
 from datetime import timedelta
 
 import aiohttp
@@ -17,6 +18,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.loader import async_get_integration
 
 _LOGGER = logging.getLogger(__name__)
 DOMAIN = "ha_companion"
@@ -36,28 +38,70 @@ PANEL_JS = "ha-companion-panel.js"
 PANEL_ELEMENT = "ha-companion-panel"
 PANEL_URL_PATH = "ha-companion"
 
+# Blueprints que trae la integración. HA NO los descubre solos por estar
+# dentro de custom_components/ha_companion/ — solo mira config/blueprints/
+# automation/<carpeta>/, así que hay que copiarlos ahí a mano en el arranque.
+BLUEPRINTS_SRC_DIR = "custom_components/ha_companion/blueprints/automation/ha_companion"
+BLUEPRINTS_DST_DIR = "blueprints/automation/ha_companion"
+BLUEPRINT_FILES = (
+    "ha_companion_dormido.yaml",
+    "ha_companion_despierto.yaml",
+    "ha_companion_sin_sincronizar.yaml",
+)
 
-def _version(hass: HomeAssistant) -> str:
-    """La versión del manifest, para enseñarla en la cabecera del panel."""
+
+def _copy_blueprints(hass: HomeAssistant) -> None:
+    """Copia los blueprints al lugar que HA sí mira, si no están ya.
+
+    Nunca sobreescribe: si el usuario ya tiene el fichero (lo importó antes,
+    o lo ha tocado a mano), se deja tal cual. Solo rellena lo que falte.
+    Llamar siempre vía `hass.async_add_executor_job` — es I/O de disco.
+    """
+    src_dir = hass.config.path(BLUEPRINTS_SRC_DIR)
+    dst_dir = hass.config.path(BLUEPRINTS_DST_DIR)
     try:
-        import json
-        ruta = hass.config.path("custom_components/ha_companion/manifest.json")
-        with open(ruta, encoding="utf-8") as f:
-            return json.load(f).get("version", "")
+        os.makedirs(dst_dir, exist_ok=True)
+        for filename in BLUEPRINT_FILES:
+            dst = os.path.join(dst_dir, filename)
+            if os.path.exists(dst):
+                continue
+            src = os.path.join(src_dir, filename)
+            if os.path.exists(src):
+                shutil.copyfile(src, dst)
+    except OSError as exc:
+        _LOGGER.warning("Could not install bundled blueprints: %s", exc)
+
+
+async def _version(hass: HomeAssistant) -> str:
+    """La versión del manifest, para enseñarla en la cabecera del panel.
+
+    Lee el manifest ya cargado por HA (`async_get_integration` cachea el
+    `Integration` tras la primera carga) en vez de abrir el fichero a mano:
+    un `open()` a pelo aquí es una llamada bloqueante dentro del bucle de
+    eventos (HA lo detecta y avisa — ver homeassistant.util.loop).
+    """
+    try:
+        integration = await async_get_integration(hass, DOMAIN)
+        return integration.manifest.get("version", "")
     except Exception:  # pylint: disable=broad-exception-caught
         return ""
 
 
-def _card_token(hass: HomeAssistant, filename: str) -> str:
+async def _card_token(hass: HomeAssistant, filename: str) -> str:
     """Cache-busting token derived from a card file's mtime.
 
     The static path is served without a Cache-Control header, so browsers fall
     back to heuristic caching: with a fixed ?v= they can keep serving a stale
     copy of the card indefinitely. Keying the query string to the file's mtime
     means every edit produces a URL the browser has never seen.
+
+    `os.path.getmtime` is blocking I/O, so it runs in the executor — calling
+    it straight from `async_setup_entry` triggers HA's blocking-call detector.
     """
     try:
-        return str(int(os.path.getmtime(hass.config.path(f"{CARD_DIR}/{filename}"))))
+        path = hass.config.path(f"{CARD_DIR}/{filename}")
+        mtime = await hass.async_add_executor_job(os.path.getmtime, path)
+        return str(int(mtime))
     except OSError:
         return "0"
 
@@ -166,6 +210,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up HA Companion from a config entry."""
     hass.data.setdefault(DOMAIN, {})
 
+    # Blueprints listos para usar sin que el usuario tenga que importarlos a
+    # mano: HA solo los descubre en config/blueprints/automation/, no dentro
+    # de custom_components/, así que los copiamos ahí una vez por instancia.
+    if not hass.data[DOMAIN].get("blueprints_installed"):
+        await hass.async_add_executor_job(_copy_blueprints, hass)
+        hass.data[DOMAIN]["blueprints_installed"] = True
+
     # Serve + register the bundled Lovelace cards once per HA instance.
     if not hass.data[DOMAIN].get("card_registered"):
         await hass.http.async_register_static_paths(
@@ -178,7 +229,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             ]
         )
         for filename in CARDS:
-            url = f"{CARD_STATIC_URL}/{filename}?v={_card_token(hass, filename)}"
+            url = f"{CARD_STATIC_URL}/{filename}?v={await _card_token(hass, filename)}"
             add_extra_js_url(hass, url)
             _LOGGER.debug("Registered Lovelace card at %s", url)
         hass.data[DOMAIN]["card_registered"] = True
@@ -194,7 +245,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if True:
         try:
             with contextlib.suppress(Exception):
-                frontend.async_remove_panel(hass, PANEL_URL_PATH)
+                # `warn_if_unknown=False`: en el primer arranque (o tras
+                # borrar y volver a añadir la integración) el panel aún no
+                # existe, y sin esto HA suelta un WARNING "Removing unknown
+                # panel ha-companion" que asusta y no significa nada. No
+                # lanza excepción, así que el suppress de arriba no bastaba.
+                frontend.async_remove_panel(hass, PANEL_URL_PATH, warn_if_unknown=False)
             # ha-panel-custom.ts del frontend lee los parámetros de carga de
             # `config._panel_custom`; las claves sueltas del primer nivel NO se
             # miran. El panel es un módulo más de www/, así que se sirve por la
@@ -209,14 +265,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     "_panel_custom": {
                         "name": PANEL_ELEMENT,
                         "module_url": f"{CARD_STATIC_URL}/{PANEL_JS}"
-                                      f"?v={_card_token(hass, PANEL_JS)}",
+                                      f"?v={await _card_token(hass, PANEL_JS)}",
                         "embed_iframe": False,
                         "trust_external": False,
                     },
                     # Cualquier clave suelta de `config` llega al panel en su
                     # propiedad `panel`. La versión no la sabe de otro modo: el
                     # manifest no se sirve al frontend.
-                    "version": _version(hass),
+                    "version": await _version(hass),
                 },
                 require_admin=False,
             )

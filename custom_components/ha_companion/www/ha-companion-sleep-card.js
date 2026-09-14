@@ -18,7 +18,8 @@
  * config:
  *   type: custom:ha-companion-sleep-card
  *   entity: sensor.<algo>_cronologia_del_sueno   (obligatorio)
- *   score_entity: sensor.<reloj>                 (opcional, atributo sleep_info)
+ *   score_entity: sensor.<...>_puntuacion_del_sueno   (opcional; también acepta
+ *                                                       el sensor maestro, vía sleep_info)
  *   title: Anoche                                (opcional)
  */
 
@@ -44,7 +45,7 @@ const FASE_CANON = {
 // en el historial de la tarjeta semanal — mejor cubrirlo aquí también).
 const STAGE_CANON = { WAKE_STAGE: "AWAKE", REM_STAGE: "REM", LIGHT_STAGE: "LIGHT", DEEP_STAGE: "DEEP" };
 const FASE_COLOR = { AWAKE: "#F0A030", REM: "#A78BFA", LIGHT: "#5B8DEF", DEEP: "#3D5AAF" };
-const FASE_ORDEN = ["AWAKE", "REM", "LIGHT", "DEEP"];
+const FASE_ORDEN = ["AWAKE", "LIGHT", "DEEP", "REM"];
 const FASE_CORTO = {
   es: { AWAKE: "Despierto", REM: "REM", LIGHT: "Ligero", DEEP: "Profundo" },
   en: { AWAKE: "Awake", REM: "REM", LIGHT: "Light", DEEP: "Deep" },
@@ -199,9 +200,14 @@ class HaCompanionSleepCard extends HTMLElement {
     let info = st.attributes.sleep_info;
     // El reloj manda `sleep_info` como cadena JSON, no como diccionario.
     if (typeof info === "string") {
-      try { info = JSON.parse(info); } catch (_) { return null; }
+      try { info = JSON.parse(info); } catch (_) { info = null; }
     }
-    return info && info.score != null ? info.score : null;
+    if (info && info.score != null) return info.score;
+    // Sin `sleep_info` (no es el sensor maestro): puede ser el sensor
+    // dedicado "Puntuación del sueño" — mismo `score_entity` que ya acepta
+    // la tarjeta semanal, ahí su propio estado ES la puntuación.
+    const directo = Number(st.state);
+    return Number.isFinite(directo) ? directo : null;
   }
 
   _render(st) {

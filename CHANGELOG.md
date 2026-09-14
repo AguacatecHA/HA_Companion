@@ -4,11 +4,56 @@ Todos los cambios notables de la integración **HA Companion** para Home Assista
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el versionado es [SemVer](https://semver.org/lang/es/).
 
-## [0.1.7] - Sin publicar
+## [0.1.8] - Sin publicar
+
+### Corregido
+- **`async_setup_entry` bloqueaba el bucle de eventos al leer el manifest y
+  las fechas de las tarjetas** (`open()` y `os.path.getmtime()` a pelo, sin
+  pasar por el executor) — HA lo detectaba y avisaba en el log
+  (`homeassistant.util.loop`, "Detected blocking call to open..."), reportado
+  por un usuario real. La versión ahora se lee del `Integration` que HA ya
+  tiene cargado (`async_get_integration`, sin tocar disco); el token de caché
+  de las tarjetas usa `hass.async_add_executor_job`.
+- **La tarjeta de la última noche no mostraba la puntuación del sueño** si en
+  `score_entity` se ponía el sensor dedicado **Puntuación del sueño** (lo
+  intuitivo, y lo que ya pide la tarjeta semanal) — solo funcionaba con el
+  sensor maestro. Reportado por un usuario real. Ahora `score_entity` acepta
+  los dos: primero mira si es el maestro (atributo `sleep_info`), si no usa
+  el propio estado del sensor.
+- **Orden de las fases en la leyenda**, en ambas tarjetas de sueño: ahora
+  Despierto, Ligero, Profundo, REM — de peor a mejor calidad de sueño, más
+  fácil de leer de un vistazo. Petición de un usuario real.
+- **El sensor "Estado del Reloj" salía como "Deporte 1"/"Deporte 2"** en vez
+  de "Llevando puesto"/"En movimiento". Reportado por un usuario real. Causa:
+  desde la 0.1.6, cualquier sensor con `lookup_table` (el mecanismo genérico
+  de extractor) pasaba SIEMPRE por la traducción de deportes, aunque el
+  comentario del propio código ya avisaba de que eso pasaría el día que
+  hubiera una segunda `lookup_table` — y lo hubo, la del estado del reloj
+  (`WEAR_STATES`), añadida en la misma 0.1.6. Afecta a la 0.1.6 y la 0.1.7,
+  las dos publicadas.
+- **Aviso "Removing unknown panel ha-companion" en el log de HA.** Lo
+  provocaba la propia integración: al registrar el panel se quita primero el
+  anterior, y si no había ninguno (primer arranque, o tras borrar y volver a
+  añadir la integración) HA lo avisaba con un WARNING. No indicaba ningún
+  fallo — reportado por un usuario real que lo confundió con la causa de que
+  no le llegaran datos. Ahora se pide explícitamente que no avise.
+- **Los blueprints no aparecían solos en Ajustes → Automatizaciones →
+  Blueprints.** Reportado por varios usuarios reales. Nunca hubo un fallo
+  puntual: Home Assistant no descubre blueprints por estar dentro de
+  `custom_components/ha_companion/`, solo mira `config/blueprints/
+  automation/<carpeta>/` — hacía falta que la propia integración los
+  copiara ahí, y eso nunca se implementó. Ahora `async_setup_entry` los
+  copia una vez por instancia (sin pisar nada si el usuario ya los tenía
+  importados o tocados a mano). Afecta a todas las versiones publicadas con
+  blueprints (0.1.6 y 0.1.7).
+
+## [0.1.7] - 2026-09-07
 
 ### Añadido
-- **Panel y tarjetas en francés, alemán e italiano**, además de español e
-  inglés. Cualquier otro idioma sigue cayendo en inglés.
+- **El panel y las tres tarjetas de Lovelace ahora se adaptan al idioma de
+  Home Assistant** (español, inglés, francés, alemán e italiano); antes su
+  texto estaba fijo en español sin más, sin mirar el idioma de la instancia.
+  Cualquier otro idioma cae en inglés.
 - **Deportes traducidos también a francés, alemán e italiano** (además de
   español), 180 en cada idioma.
 - **Pulsar una noche en `ha-companion-sleep-week-card` abre su hipnograma**,
