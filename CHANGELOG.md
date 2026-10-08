@@ -4,7 +4,7 @@ Todos los cambios notables de la integración **HA Companion** para Home Assista
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el versionado es [SemVer](https://semver.org/lang/es/).
 
-## [0.1.9] - Sin publicar
+## [0.1.9] - 2026-10-08
 
 ### Añadido
 - **Copia de seguridad de la configuración del reloj.** Cambiar de reloj o
