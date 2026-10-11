@@ -328,6 +328,49 @@ SENSORS = [
         "state_class": "measurement",
         "sleep_timeline_extract": True,
     },
+    # --- Siestas -----------------------------------------------------------
+    # Pedido por un usuario que trabaja de noche: Zepp apunta el sueño fuera de
+    # horas como "siestas", aparte del sueño principal, así que sin esto su
+    # descanso real no aparecía por ningún lado. El reloj manda una lista
+    # (`sleep_naps`) con la duración y el inicio/fin de cada una, en minutos
+    # desde las 00:00 del día.
+    {
+        "key": "naps_count",
+        "translation_key": "naps_count",
+        "attribute": "sleep_naps",
+        "icon": "mdi:sleep",
+        "state_class": "measurement",
+        "array_extract": "count",
+    },
+    {
+        "key": "naps_total",
+        "translation_key": "naps_total",
+        "attribute": "sleep_naps",
+        "icon": "mdi:clock-time-four-outline",
+        "unit": "min",
+        "device_class": "duration",
+        "state_class": "measurement",
+        "array_extract": "sum",
+        "array_field": "length",
+    },
+    {
+        "key": "naps_last_start",
+        "translation_key": "naps_last_start",
+        "attribute": "sleep_naps",
+        "icon": "mdi:sleep",
+        "array_extract": "last",
+        "array_field": "start",
+        "time_convert": True,
+    },
+    {
+        "key": "naps_last_end",
+        "translation_key": "naps_last_end",
+        "attribute": "sleep_naps",
+        "icon": "mdi:sleep-off",
+        "array_extract": "last",
+        "array_field": "stop",
+        "time_convert": True,
+    },
     {
         "key": "stress",
         "attribute": "stress_state",
@@ -366,6 +409,13 @@ SENSORS = [
         "attribute": "user_weight",
         "icon": "mdi:weight-kilogram",
         "unit": "kg",
+        "device_class": "weight",
+        # El peso se cambia en el reloj y va variando, así que interesa su
+        # evolución, no solo el valor de hoy. Con `measurement` el recorder le
+        # genera estadísticas de largo plazo y la tarjeta puede pintar meses o
+        # años. OJO: HA no rellena hacia atrás — la serie empieza el día que se
+        # instala esta versión.
+        "state_class": "measurement",
         "entity_category": "diagnostic",
     },
     {

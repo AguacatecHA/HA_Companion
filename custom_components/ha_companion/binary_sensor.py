@@ -10,6 +10,9 @@ from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
+from homeassistant.helpers.storage import Store
+
 from .const import DOMAIN, BINARY_SENSORS
 
 _LOGGER = logging.getLogger(__name__)
@@ -38,6 +41,9 @@ async def async_setup_entry(
             )
     entities.append(
         UpdatePendingBinarySensor(hass, coordinator, config_entry.entry_id, username, master_sensor_id)
+    )
+    entities.append(
+        BackupBinarySensor(hass, config_entry.entry_id, username)
     )
     async_add_entities(entities, True)
 
@@ -263,5 +269,79 @@ class UpdatePendingBinarySensor(CoordinatorEntity, BinarySensorEntity):
         self.async_on_remove(
             async_track_state_change_event(
                 self.hass, [self._master_sensor_id], self._handle_master_update
+            )
+        )
+
+
+class BackupBinarySensor(BinarySensorEntity):
+    """ON cuando hay una copia de la configuración de la app guardada en HA.
+
+    No sale de los atributos del sensor maestro como el resto: refleja lo que
+    la propia integración tiene guardado, así que se lee del `Store` al
+    arrancar y se refresca por señal cuando la app manda una copia nueva.
+    """
+
+    _attr_should_poll = False
+
+    def __init__(self, hass: HomeAssistant, entry_id: str, username: str) -> None:
+        self.hass = hass
+        self._username = username
+        self._saved_at: str | None = None
+        self._keys: int | None = None
+
+        self._attr_has_entity_name = True
+        self._attr_translation_key = "config_backup"
+        self._attr_unique_id = f"{entry_id}_config_backup"
+        self._attr_icon = "mdi:cloud-check-variant"
+        self._attr_entity_category = EntityCategory.DIAGNOSTIC
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, f"{username}_watch")},
+            name=f"{username.capitalize()} Amazfit Watch",
+            manufacturer="Aguacatec Team",
+            model="Amazfit Watch",
+        )
+
+    @property
+    def is_on(self) -> bool:
+        return self._saved_at is not None
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        return {"last_backup": self._saved_at, "entries": self._keys}
+
+    async def _lee_store(self) -> None:
+        """Relee la copia guardada. Es la única forma de poner el estado.
+
+        La señal no trae los datos a propósito: si el sensor se fiara de lo que
+        le llega, se quedaría en `on` cuando la copia desaparece por detrás
+        (alguien limpia `.storage`, o se restaura un backup de HA anterior a
+        ella). Leyendo siempre el `Store`, el sensor no puede mentir.
+        """
+        # Import local: la vista y las constantes viven en __init__, y traerlas
+        # arriba del todo haría un import circular con la plataforma.
+        from . import BACKUP_VERSION, _backup_key
+
+        store: Store = Store(self.hass, BACKUP_VERSION, _backup_key(self._username))
+        guardado = await store.async_load()
+        if guardado and guardado.get("config"):
+            self._saved_at = guardado.get("saved_at")
+            self._keys = len(guardado["config"])
+        else:
+            self._saved_at = None
+            self._keys = None
+
+    async def _actualiza(self) -> None:
+        await self._lee_store()
+        self.async_write_ha_state()
+
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+        from . import BACKUP_SIGNAL
+
+        await self._lee_store()
+
+        self.async_on_remove(
+            async_dispatcher_connect(
+                self.hass, f"{BACKUP_SIGNAL}_{self._username}", self._actualiza
             )
         )

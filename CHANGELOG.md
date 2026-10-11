@@ -4,7 +4,81 @@ Todos los cambios notables de la integración **HA Companion** para Home Assista
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el versionado es [SemVer](https://semver.org/lang/es/).
 
-## [0.1.8] - Sin publicar
+## [0.1.9] - 2026-10-08
+
+### Añadido
+- **Copia de seguridad de la configuración del reloj.** Cambiar de reloj o
+  reinstalar la app obligaba a volver a elegir las entidades una a una,
+  reordenar el menú y reconfigurar los widgets. Ahora la app puede guardar su
+  configuración aquí y recuperarla después:
+  - `POST /api/ha_companion/backup` la guarda (indexada por reloj, para que
+    dos relojes no se pisen), `GET` la devuelve.
+  - Dos entidades nuevas: **Copia de Configuración**, que dice si la hay, y
+    **Fecha de la Copia**, cuyo valor es la fecha de la última — así se ve en
+    una tarjeta de un vistazo y se puede automatizar un aviso si lleva mucho
+    sin actualizarse. En los doce idiomas de la integración.
+  - Los ajustes del teléfono también enseñan esa fecha al abrirlos, sin tener
+    que exportar antes para enterarse.
+  - **Las credenciales no se guardan**: la URL y el token hay que teclearlos
+    igualmente al reinstalar, así que no hacen falta en la copia y no quedan
+    en disco.
+  Necesita la versión **2.13 de la app del reloj**, que es la que trae los
+  botones de exportar e importar. Hasta que la 2.13 esté publicada, esas dos
+  entidades se ven vacías —*Copia de Configuración* en `off` y *Fecha de la
+  Copia* sin valor— porque todavía no hay nada que exporte: es lo esperado, no
+  un fallo.
+- **Tarjeta nueva del peso** (`custom:ha-companion-weight-card`), a petición de
+  un usuario: el peso de ahora mismo, cuánto ha subido o bajado en el periodo,
+  la línea de evolución y el mínimo, la media y el máximo. Tres botones para
+  ver la semana, el mes o el año. El peso aparece también en la sección
+  "Ahora mismo" del panel.
+- El sensor de peso pasa a llevar `state_class: measurement` (y su clase de
+  dispositivo), que es lo que hace que Home Assistant le guarde estadísticas de
+  largo plazo. **Ojo: HA no las rellena hacia atrás**, así que la gráfica
+  empieza el día que se instale esta versión; los primeros días la tarjeta tira
+  del historial normal para no salir vacía.
+- **El selector de tarjetas sale en tu idioma.** El nombre y la descripción de
+  las cuatro estaban fijos en inglés aunque Home Assistant estuviera en otro
+  idioma; ahora siguen al de la instancia (es, en, fr, de, it).
+- **Sensores de siestas**, a petición de un usuario que hace turnos de noche:
+  Zepp apunta el sueño fuera de horas como siestas, aparte del sueño principal,
+  así que su descanso de verdad no aparecía por ningún lado. Son cuatro:
+  **Siestas** (cuántas hoy), **Tiempo de Siestas** (minutos en total), y el
+  **inicio** y el **fin de la última**. En los doce idiomas.
+  Necesita la **2.13 de la app**, que es la que empieza a mandar ese dato: hasta
+  entonces los cuatro se ven vacíos, igual que los de la copia. Y en relojes
+  anteriores a Zepp OS 3.0 seguirán vacíos, porque ahí el reloj no da siestas.
+- **Editor visual en las cuatro tarjetas.** Al añadirlas desde la interfaz sale
+  un desplegable con los relojes dados de alta: se elige el tuyo por su nombre y
+  la tarjeta queda configurada, sin tocar YAML ni saberse ningún `entity_id`.
+  Con un solo reloj ni eso: la opción por defecto ya vale.
+
+### Corregido
+- **El orden de las fases en la tarjeta semanal.** La 0.1.8 puso el orden
+  acordado —despierto, ligero, profundo, REM— en la tarjeta de la noche y en el
+  hipnograma, pero en la semanal se quedó al revés y con el profundo y el REM
+  cambiados: la barra se pintaba con `column-reverse`, así que el array iba en
+  sentido contrario a lo que se veía. Ahora la barra, su leyenda y el texto que
+  sale al pasar el ratón siguen los cuatro el mismo orden. Avisado por el mismo
+  usuario que pidió el cambio de la 0.1.8.
+- **Recargar la integración no refrescaba las tarjetas.** Sus URLs se anunciaban
+  una sola vez por arranque, así que tras actualizar seguía anunciándose la
+  dirección anterior hasta reiniciar Home Assistant entero — y como la
+  dirección no cambiaba pero el fichero sí, el navegador servía el archivo
+  viejo de su caché. Ahora se vuelven a anunciar en cada arranque de la
+  entrada, como ya hacía el panel, y se retira la dirección anterior para que
+  no queden las dos.
+- **Las tarjetas ya se pueden añadir a cualquier panel, no solo al nuestro.**
+  Se registraban en todo el frontend desde el principio, pero al añadirlas desde
+  "Añadir tarjeta" venían inservibles salvo en una instalación como la del
+  autor: la semanal traía escrito su propio reloj (`sensor.balance_jesus`) y
+  buscaba las fases por sufijos en español, la del sueño buscaba un `entity_id`
+  que solo existe en español y la de entrenamientos, uno que solo existe en
+  inglés. Ahora **si no se configura entidad, cada tarjeta busca sola** la del
+  reloj que esté dando datos, por la clave del registro, que no cambia con el
+  idioma. Configurarlas a mano sigue funcionando igual.
+
+## [0.1.8] - 2026-09-14
 
 ### Corregido
 - **`async_setup_entry` bloqueaba el bucle de eventos al leer el manifest y

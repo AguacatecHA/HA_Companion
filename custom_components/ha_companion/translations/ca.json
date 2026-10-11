@@ -189,6 +189,21 @@
                     "in_motion": "En moviment",
                     "not_sure": "Indeterminat"
                 }
+            },
+            "config_backup_date": {
+                "name": "Data de la Còpia"
+            },
+            "naps_count": {
+                "name": "Migdiades"
+            },
+            "naps_total": {
+                "name": "Temps de Migdiada"
+            },
+            "naps_last_start": {
+                "name": "Inici de l'Última Migdiada"
+            },
+            "naps_last_end": {
+                "name": "Fi de l'Última Migdiada"
             }
         },
         "binary_sensor": {
@@ -233,6 +248,9 @@
             },
             "update_pending": {
                 "name": "Actualització Disponible"
+            },
+            "config_backup": {
+                "name": "Còpia de Configuració"
             }
         }
     }

@@ -2,6 +2,7 @@
 from __future__ import annotations
 import contextlib
 import logging
+from collections.abc import Mapping
 import os
 import shutil
 from datetime import timedelta
@@ -17,7 +18,9 @@ from homeassistant.helpers import label_registry as lr
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.storage import Store
+from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.util import dt as dt_util
 from homeassistant.loader import async_get_integration
 
 _LOGGER = logging.getLogger(__name__)
@@ -31,6 +34,7 @@ CARDS = (
     "ha-companion-sleep-card.js",
     "ha-companion-sleep-week-card.js",
     "ha-companion-workout-card.js",
+    "ha-companion-weight-card.js",
 )
 
 # Panel propio en la barra lateral, al estilo de lo que hace WashData.
@@ -128,6 +132,25 @@ def _cache_key(username: str) -> str:
     return f"{DOMAIN}.master.{username}"
 
 
+# --- Copia de seguridad de la configuración del reloj -----------------------
+#
+# Reinstalar la app o cambiar de reloj obligaba a volver a elegir las entidades
+# una a una, reordenar el menú y reconfigurar los widgets. La app no puede
+# guardar un fichero en el móvil (el API de ajustes de Zepp no da acceso al
+# sistema de archivos), así que la copia vive aquí: la app la envía cuando el
+# usuario pulsa "exportar", y al reinstalar la pide de vuelta.
+#
+# Las credenciales NO viajan en la copia: la URL y el token hay que teclearlos
+# igualmente para que la app funcione, así que no hace falta guardarlos y así
+# no quedan en disco.
+BACKUP_VERSION = 1
+BACKUP_SIGNAL = f"{DOMAIN}_backup_updated"
+
+
+def _backup_key(username: str) -> str:
+    return f"{DOMAIN}.backup.{username}"
+
+
 class VersionCoordinator(DataUpdateCoordinator):
     """Fetches the latest published app version from GitHub."""
 
@@ -206,6 +229,100 @@ class HACompanionLabelsView(HomeAssistantView):
         return self.json(labels)
 
 
+class HACompanionBackupView(HomeAssistantView):
+    """Guarda y devuelve la configuración de la app del reloj.
+
+    GET  /api/ha_companion/backup?username=<x>
+         -> {"exists": bool, "saved_at": iso|null, "config": {...}|null}
+    POST /api/ha_companion/backup   {"username": "<x>", "config": {...}}
+         -> {"ok": true, "saved_at": iso}
+
+    El `username` identifica el reloj (el mismo que da nombre al sensor
+    maestro), para que dos relojes no se pisen la copia. Si no se indica y solo
+    hay una entrada configurada, se usa esa.
+    """
+
+    url = "/api/ha_companion/backup"
+    name = "api:ha_companion:backup"
+    requires_auth = True
+
+    @staticmethod
+    def _username(hass, pedido: str | None) -> str | None:
+        """Devuelve el username solo si corresponde a una entrada dada de alta.
+
+        La clave del `Store` termina siendo un nombre de fichero dentro de
+        `.storage`, así que el nombre que llega en la petición NO puede usarse
+        tal cual: un `../` escaparía del directorio. Se contrasta siempre con
+        los usernames configurados, que es además lo único que tiene sentido
+        respaldar. Un nombre inventado se responde igual que uno ausente, para
+        no ir diciendo qué relojes hay dados de alta.
+        """
+        # entry.data es un MappingProxyType, no un dict: hay que comprobar
+        # Mapping o la lista sale siempre vacía.
+        configurados = [
+            datos.get("username")
+            for datos in hass.data.get(DOMAIN, {}).values()
+            if isinstance(datos, Mapping) and datos.get("username")
+        ]
+        if not pedido:
+            return configurados[0] if len(configurados) == 1 else None
+
+        # El reloj manda el nombre tal cual lo tiene guardado, que conserva las
+        # mayúsculas (amazfit_HA_Companion), mientras que el config flow guarda
+        # el username en minúsculas. Se comparan normalizados igual que allí, y
+        # se devuelve SIEMPRE el valor configurado: así lo que acaba en la clave
+        # del Store nunca procede de la petición.
+        buscado = pedido.lower().replace(" ", "_")
+        for username in configurados:
+            if username.lower().replace(" ", "_") == buscado:
+                return username
+        return None
+
+    async def get(self, request):
+        hass = request.app["hass"]
+        username = self._username(hass, request.query.get("username"))
+        if not username:
+            return self.json({"exists": False, "saved_at": None, "config": None})
+
+        store: Store = Store(hass, BACKUP_VERSION, _backup_key(username))
+        guardado = await store.async_load()
+        if not guardado or not guardado.get("config"):
+            # La copia pudo desaparecer por detrás (limpieza de .storage, o una
+            # restauración de HA anterior a ella) y el sensor seguiría en `on`.
+            # Se avisa para que se relea y se apague.
+            async_dispatcher_send(hass, f"{BACKUP_SIGNAL}_{username}")
+            return self.json({"exists": False, "saved_at": None, "config": None})
+        return self.json({
+            "exists": True,
+            "saved_at": guardado.get("saved_at"),
+            "config": guardado["config"],
+        })
+
+    async def post(self, request):
+        hass = request.app["hass"]
+        try:
+            cuerpo = await request.json()
+        except ValueError:
+            return self.json({"ok": False, "error": "invalid_json"}, status_code=400)
+
+        config = cuerpo.get("config")
+        if not isinstance(config, dict) or not config:
+            return self.json({"ok": False, "error": "empty_config"}, status_code=400)
+
+        username = self._username(hass, cuerpo.get("username"))
+        if not username:
+            return self.json({"ok": False, "error": "unknown_username"}, status_code=400)
+
+        saved_at = dt_util.utcnow().isoformat()
+        store: Store = Store(hass, BACKUP_VERSION, _backup_key(username))
+        await store.async_save({"saved_at": saved_at, "config": config})
+        # La señal no lleva datos: el sensor relee el Store, que es lo único
+        # que sabe la verdad (ver BackupBinarySensor._lee_store).
+        async_dispatcher_send(hass, f"{BACKUP_SIGNAL}_{username}")
+        _LOGGER.info("Saved watch configuration backup for %s (%d keys)", username, len(config))
+        return self.json({"ok": True, "saved_at": saved_at})
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up HA Companion from a config entry."""
     hass.data.setdefault(DOMAIN, {})
@@ -218,6 +335,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data[DOMAIN]["blueprints_installed"] = True
 
     # Serve + register the bundled Lovelace cards once per HA instance.
+    # La ruta estática solo se puede registrar una vez por arranque.
     if not hass.data[DOMAIN].get("card_registered"):
         await hass.http.async_register_static_paths(
             [
@@ -228,11 +346,33 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 )
             ]
         )
-        for filename in CARDS:
-            url = f"{CARD_STATIC_URL}/{filename}?v={await _card_token(hass, filename)}"
-            add_extra_js_url(hass, url)
-            _LOGGER.debug("Registered Lovelace card at %s", url)
         hass.data[DOMAIN]["card_registered"] = True
+
+    # Las URLs de las tarjetas, en cambio, se anuncian DE NUEVO en cada setup,
+    # igual que el panel. Llevan el token de caché (el mtime del fichero): si se
+    # dejaran detrás de la guarda de arriba, tras actualizar la integración se
+    # seguiría anunciando la URL vieja hasta el siguiente reinicio completo, y
+    # como la URL no cambia pero el fichero sí, el navegador serviría el módulo
+    # antiguo de su caché. Con esto basta con recargar la integración.
+    anteriores = hass.data[DOMAIN].get("card_urls", [])
+    actuales = [
+        f"{CARD_STATIC_URL}/{filename}?v={await _card_token(hass, filename)}"
+        for filename in CARDS
+    ]
+    # Quitar las de la versión anterior: si no, quedarían anunciadas las dos y
+    # el navegador cargaría el módulo dos veces (la segunda no puede registrar
+    # los mismos elementos y se pierde).
+    for vieja in anteriores:
+        if vieja in actuales:
+            continue
+        with contextlib.suppress(Exception):
+            from homeassistant.components.frontend import remove_extra_js_url
+
+            remove_extra_js_url(hass, vieja)
+    for url in actuales:
+        add_extra_js_url(hass, url)
+        _LOGGER.debug("Registered Lovelace card at %s", url)
+    hass.data[DOMAIN]["card_urls"] = actuales
 
     # Panel de la barra lateral. Va aparte de las tarjetas: si el registro del
     # panel fallara, las tarjetas deben seguir funcionando igualmente.
@@ -293,6 +433,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if not hass.data[DOMAIN].get("labels_view_registered"):
         hass.http.register_view(HACompanionLabelsView())
         hass.data[DOMAIN]["labels_view_registered"] = True
+
+    # Copia de seguridad de la configuración de la app del reloj.
+    if not hass.data[DOMAIN].get("backup_view_registered"):
+        hass.http.register_view(HACompanionBackupView())
+        hass.data[DOMAIN]["backup_view_registered"] = True
 
     # Coordinator is shared — create it only once per HA instance
     if "version_coordinator" not in hass.data[DOMAIN]:

@@ -198,6 +198,21 @@
             },
             "sync_age": {
                 "name": "Ancienneté de la synchro"
+            },
+            "config_backup_date": {
+                "name": "Date de la Sauvegarde"
+            },
+            "naps_count": {
+                "name": "Siestes"
+            },
+            "naps_total": {
+                "name": "Temps de Sieste"
+            },
+            "naps_last_start": {
+                "name": "Début de la Dernière Sieste"
+            },
+            "naps_last_end": {
+                "name": "Fin de la Dernière Sieste"
             }
         },
         "binary_sensor": {
@@ -245,6 +260,9 @@
             },
             "is_charging": {
                 "name": "En charge"
+            },
+            "config_backup": {
+                "name": "Sauvegarde de Configuration"
             }
         },
         "device_tracker": {

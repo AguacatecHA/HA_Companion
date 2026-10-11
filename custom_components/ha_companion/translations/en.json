@@ -198,6 +198,21 @@
       },
       "sync_age": {
         "name": "Sync Age"
+      },
+      "config_backup_date": {
+        "name": "Backup Date"
+      },
+      "naps_count": {
+        "name": "Naps"
+      },
+      "naps_total": {
+        "name": "Nap Time"
+      },
+      "naps_last_start": {
+        "name": "Last Nap Start"
+      },
+      "naps_last_end": {
+        "name": "Last Nap End"
       }
     },
     "device_tracker": {
@@ -250,6 +265,9 @@
       },
       "is_charging": {
         "name": "Charging"
+      },
+      "config_backup": {
+        "name": "Configuration Backup"
       }
     }
   },

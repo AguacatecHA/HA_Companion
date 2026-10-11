@@ -195,6 +195,21 @@
             },
             "sync_age": {
                 "name": "Desde la última sincronización"
+            },
+            "config_backup_date": {
+                "name": "Fecha de la Copia"
+            },
+            "naps_count": {
+                "name": "Siestas"
+            },
+            "naps_total": {
+                "name": "Tiempo de Siestas"
+            },
+            "naps_last_start": {
+                "name": "Inicio de la Última Siesta"
+            },
+            "naps_last_end": {
+                "name": "Fin de la Última Siesta"
             }
         },
         "binary_sensor": {
@@ -242,6 +257,9 @@
             },
             "is_charging": {
                 "name": "Cargando"
+            },
+            "config_backup": {
+                "name": "Copia de Configuración"
             }
         }
     },

@@ -1,7 +1,7 @@
 # Panel y tarjetas de HA Companion
 
 Desde esta versión, HA Companion trae **su propio panel en la barra lateral** y
-**tres tarjetas de Lovelace**. **No hay que instalar nada ni dar de alta ningún
+**cuatro tarjetas de Lovelace**. **No hay que instalar nada ni dar de alta ningún
 recurso**: la integración lo sirve y lo registra todo sola al arrancar.
 
 | Qué | Dónde |
@@ -10,8 +10,28 @@ recurso**: la integración lo sirve y lo registra todo sola al arrancar.
 | `custom:ha-companion-sleep-card` | Hipnograma de la última noche |
 | `custom:ha-companion-sleep-week-card` | Las últimas noches, apiladas por fase |
 | `custom:ha-companion-workout-card` | Historial de entrenamientos, a su hora real |
+| `custom:ha-companion-weight-card` | El peso y su evolución |
 
-Sustituye `balance_jesus` por el nombre de tu reloj en todos los ejemplos.
+Sustituye `mi_reloj` por el nombre de tu reloj en todos los ejemplos.
+
+## Las tarjetas valen en cualquier panel, no solo en el nuestro
+
+El panel de la barra lateral es **un ejemplo montado**, no el único sitio donde
+viven las tarjetas. Se registran en el frontend entero (`add_extra_js_url`), así
+que aparecen en **Añadir tarjeta** de cualquier panel de Lovelace, con el nombre
+**HA Companion · …**, y se pueden mezclar con las tarjetas de siempre.
+
+Al añadir cualquiera de ellas sale un **editor con un desplegable de relojes**:
+se elige el tuyo por su nombre y la tarjeta se configura sola. Con un solo reloj
+ni eso hace falta — la opción por defecto, *"El que esté dando datos"*, ya vale.
+
+Y **no hace falta saberse ningún `entity_id`**: si no se configura entidad, cada
+tarjeta busca sola la del reloj que esté dando datos. Esto importa más de lo que
+parece, porque el `entity_id` se genera a partir del nombre traducido y **cambia
+con el idioma de la instalación**: lo que en español es
+`sensor.mi_reloj_sueno_profundo`, en inglés es `..._deep_sleep`. Por eso la
+búsqueda va por la clave del `unique_id` del registro, que es estable, igual que
+hace el panel. Si se configura entidad a mano, manda la configuración.
 
 ---
 
@@ -80,13 +100,13 @@ porcentaje. Sale del atributo `timeline` del sensor de cronología del sueño.
 
 ```yaml
 type: custom:ha-companion-sleep-card
-entity: sensor.balance_jesus_cronologia_del_sueno
-score_entity: sensor.balance_jesus_puntuacion_del_sueno     # opcional
+entity: sensor.mi_reloj_cronologia_del_sueno
+score_entity: sensor.mi_reloj_puntuacion_del_sueno     # opcional
 ```
 
 | Opción | Obligatoria | Qué es |
 |---|---|---|
-| `entity` | sí | El sensor de cronología del sueño |
+| `entity` | no | El sensor de cronología del sueño. Si falta, se busca solo |
 | `score_entity` | no | El sensor **Puntuación del sueño** (el mismo que usa la tarjeta semanal) |
 | `title` | no | Cabecera de la tarjeta |
 
@@ -127,15 +147,15 @@ Una columna por noche, apiladas por fase, con la media arriba.
 
 ```yaml
 type: custom:ha-companion-sleep-week-card
-prefix: sensor.balance_jesus
-score_entity: sensor.balance_jesus_puntuacion_del_sueno         # opcional
-timeline_entity: sensor.balance_jesus_cronologia_del_sueno      # opcional
+prefix: sensor.mi_reloj
+score_entity: sensor.mi_reloj_puntuacion_del_sueno         # opcional
+timeline_entity: sensor.mi_reloj_cronologia_del_sueno      # opcional
 days: 7                                                          # opcional
 ```
 
 | Opción | Obligatoria | Qué es |
 |---|---|---|
-| `prefix` | sí\* | Prefijo de tus sensores; de ahí compone `_sueno_profundo`, `_sueno_rem`, `_sueno_ligero` y `_tiempo_despierto` |
+| `prefix` | no | Prefijo de tus sensores; de ahí compone `_sueno_profundo`, `_sueno_rem`, `_sueno_ligero` y `_tiempo_despierto` (solo vale en instalaciones en español; mejor dejar que la busque sola o usar el editor) |
 | `entities` | sí\* | Alternativa a `prefix`: `{DEEP: sensor.x, REM: ..., LIGHT: ..., AWAKE: ...}` — claves internas fijas, no traducidas. Es lo que usa el panel, que resuelve los ids por `unique_id` y no depende del idioma |
 | `score_entity` | no | Puntuación del sueño, se pinta bajo cada columna |
 | `timeline_entity` | no | El sensor de cronología del sueño. Sin él las columnas no son pulsables |
@@ -200,16 +220,16 @@ para ver de un vistazo a qué horas entrenas.
 
 ```yaml
 type: custom:ha-companion-workout-card
-entity: sensor.balance_jesus_recent_workouts
-load_entity: sensor.balance_jesus_carga_de_entrenamiento          # opcional
-vo2_entity: sensor.balance_jesus_vo2_max                          # opcional
-recovery_entity: sensor.balance_jesus_tiempo_de_recuperacion_total # opcional
+entity: sensor.mi_reloj_recent_workouts
+load_entity: sensor.mi_reloj_carga_de_entrenamiento          # opcional
+vo2_entity: sensor.mi_reloj_vo2_max                          # opcional
+recovery_entity: sensor.mi_reloj_tiempo_de_recuperacion_total # opcional
 days: 7                                                            # opcional
 ```
 
 | Opción | Obligatoria | Qué es |
 |---|---|---|
-| `entity` | sí | El sensor de entrenamientos recientes (usa su atributo `workouts`) |
+| `entity` | no | El sensor de entrenamientos recientes (atributo `workouts`). Si falta, se busca solo |
 | `load_entity` / `vo2_entity` / `recovery_entity` | no | Agregados que se pintan al pie |
 | `days` | no | Cuántos días, 7 por defecto |
 | `title` | no | Cabecera de la tarjeta |
@@ -234,6 +254,43 @@ inventarla.
 Existe `Workout.getUserHrZoneSettings()` (API 4.2), pero devuelve los **umbrales
 configurados** de las zonas, no cuánto tiempo pasaste en cada una. Serviría para
 otra cosa, no para esto.
+
+---
+
+## `ha-companion-weight-card` — el peso y su evolución
+
+El peso no lo mide el reloj: lo teclea el usuario ahí o en la app de Zepp. Por
+eso el número de hoy dice poco y lo que interesa es la línea.
+
+```yaml
+type: custom:ha-companion-weight-card
+entity: sensor.mi_reloj_peso
+range: month      # week | month | year — opcional, month por defecto
+decimals: 1       # opcional
+title: Peso       # opcional
+```
+
+| Opción | Obligatoria | Qué es |
+|---|---|---|
+| `entity` | no | El sensor de peso del reloj. Si falta, se busca solo |
+| `range` | no | Periodo inicial; los tres botones de la tarjeta lo cambian en vivo |
+| `decimals` | no | Decimales, 1 por defecto |
+| `title` | no | Cabecera de la tarjeta |
+
+Pinta el valor actual, cuánto ha subido o bajado desde el principio del
+periodo, la línea de evolución y el mínimo, la media y el máximo.
+
+### De dónde salen los datos, y por qué al principio se ve vacía
+
+Semana y mes salen de las **estadísticas del recorder** por día, y el año por
+mes (`recorder/statistics_during_period`, tipo `mean`).
+
+Esas estadísticas existen porque desde la 0.1.9 el sensor de peso lleva
+`state_class: measurement`. **Home Assistant no las rellena hacia atrás**: la
+serie empieza el día que se instala esa versión, no antes. Los primeros días la
+tarjeta cae al historial normal (`history_during_period`), que cubre lo que el
+recorder guarde —diez días por defecto—, así que se ve algo desde el principio;
+la vista anual tarda un año en estar completa, y no hay forma de acelerarlo.
 
 ---
 
@@ -362,7 +419,7 @@ calorías, distancia, quema de grasa y horas de pie**.
 Están disponibles para cualquiera desde una plantilla:
 
 ```jinja
-{{ state_attr('sensor.balance_jesus_pasos', 'week_total') }}
+{{ state_attr('sensor.mi_reloj_pasos', 'week_total') }}
 ```
 
 No hace falta configurar nada: sale de las estadísticas que el recorder ya
@@ -462,7 +519,7 @@ el reloj calla, y cualquiera puede montar un aviso encima:
 - alias: El reloj no sincroniza
   trigger:
     - platform: state
-      entity_id: sensor.balance_jesus_desde_la_ultima_sincronizacion
+      entity_id: sensor.mi_reloj_desde_la_ultima_sincronizacion
       attribute: is_stale
       to: true
 ```

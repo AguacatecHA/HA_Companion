@@ -198,6 +198,21 @@
             },
             "sync_age": {
                 "name": "Tempo dall'ultima sincronizzazione"
+            },
+            "config_backup_date": {
+                "name": "Data del Backup"
+            },
+            "naps_count": {
+                "name": "Pisolini"
+            },
+            "naps_total": {
+                "name": "Tempo di Pisolino"
+            },
+            "naps_last_start": {
+                "name": "Inizio Ultimo Pisolino"
+            },
+            "naps_last_end": {
+                "name": "Fine Ultimo Pisolino"
             }
         },
         "binary_sensor": {
@@ -245,6 +260,9 @@
             },
             "is_charging": {
                 "name": "In carica"
+            },
+            "config_backup": {
+                "name": "Backup della Configurazione"
             }
         },
         "device_tracker": {

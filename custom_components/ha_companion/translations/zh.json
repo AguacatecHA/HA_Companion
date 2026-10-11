@@ -189,6 +189,21 @@
                     "in_motion": "运动中",
                     "not_sure": "不确定"
                 }
+            },
+            "config_backup_date": {
+                "name": "备份日期"
+            },
+            "naps_count": {
+                "name": "小睡"
+            },
+            "naps_total": {
+                "name": "小睡时长"
+            },
+            "naps_last_start": {
+                "name": "上次小睡开始"
+            },
+            "naps_last_end": {
+                "name": "上次小睡结束"
             }
         },
         "binary_sensor": {
@@ -233,6 +248,9 @@
             },
             "update_pending": {
                 "name": "有可用更新"
+            },
+            "config_backup": {
+                "name": "配置备份"
             }
         }
     }

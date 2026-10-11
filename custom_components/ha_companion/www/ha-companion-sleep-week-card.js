@@ -23,7 +23,7 @@
  *
  * config:
  *   type: custom:ha-companion-sleep-week-card
- *   prefix: sensor.balance_jesus          (de ahí compone las cuatro fases)
+ *   prefix: sensor.mi_reloj          (opcional; de ahí compone las cuatro fases)
  *     — o bien —
  *   entities: {DEEP: sensor.x, REM: sensor.y, LIGHT: ..., AWAKE: ...}
  *     (el panel las pasa así: son claves internas fijas, no traducidas — el
@@ -53,12 +53,63 @@ const idioma = (hass) => {
   return SOPORTADOS.includes(l) ? l : "en";
 };
 
+// --- Encontrar los relojes sin depender del idioma -------------------------
+// El entity_id se genera a partir del nombre traducido, así que cambia con el
+// idioma de la instalación: buscar por texto ("_peso", "_recent_workouts") solo
+// acierta en el idioma en el que se escribió la tarjeta. Lo estable es la clave
+// del `unique_id` del registro (`<ULID>_<clave>`), que es justo lo que mira el
+// panel. Va duplicado en cada tarjeta a propósito: así ninguna depende de que
+// otro fichero se haya cargado antes.
+const ULID = 26;
+async function relojesDeHA(hass) {
+  let ents, devs;
+  try {
+    [ents, devs] = await Promise.all([
+      hass.callWS({ type: "config/entity_registry/list" }),
+      hass.callWS({ type: "config/device_registry/list" }),
+    ]);
+  } catch (_) {
+    return [];
+  }
+  const nombreDe = new Map((devs || []).map((d) => [d.id, d.name_by_user || d.name]));
+  const porDisp = new Map();
+  for (const e of ents || []) {
+    if (e.platform !== "ha_companion" || !e.device_id || !e.unique_id) continue;
+    const clave = e.unique_id.slice(ULID + 1);
+    if (!clave) continue;
+    if (!porDisp.has(e.device_id)) {
+      porDisp.set(e.device_id, {
+        device_id: e.device_id,
+        nombre: nombreDe.get(e.device_id) || e.device_id,
+        claves: {},
+      });
+    }
+    porDisp.get(e.device_id).claves[clave] = e.entity_id;
+  }
+  // Delante, el reloj que esté dando datos: con dos relojes dados de alta, el
+  // que interesa por defecto es el que se está usando.
+  const vivo = (r) => {
+    const id = r.claves.record_time || r.claves.battery;
+    const st = id && hass.states[id];
+    return !!st && st.state !== "unavailable" && st.state !== "unknown";
+  };
+  const todos = [...porDisp.values()];
+  return todos.filter(vivo).concat(todos.filter((r) => !vivo(r)));
+}
+
 // Mismo lenguaje de color que ha-companion-sleep-card: se leen juntas.
+// En el ORDEN EN QUE SE VEN, de arriba abajo: despierto, ligero, profundo, REM
+// — de peor a mejor calidad de sueño, el mismo criterio que la leyenda de la
+// tarjeta de la noche y del hipnograma. Un usuario avisó de que aquí no
+// coincidía: la barra se pintaba con `column-reverse`, así que el array iba al
+// revés de lo que se veía y era imposible de seguir. Ahora el array ES el orden
+// visual y la barra se pinta en `column`; si se cambia una cosa hay que cambiar
+// la otra.
 const FASES = [
+  { sufijo: "_tiempo_despierto", clave: "AWAKE", color: "#F0A030" },
+  { sufijo: "_sueno_ligero",   clave: "LIGHT", color: "#5B8DEF" },
   { sufijo: "_sueno_profundo", clave: "DEEP", color: "#3D5AAF" },
   { sufijo: "_sueno_rem",      clave: "REM",  color: "#A78BFA" },
-  { sufijo: "_sueno_ligero",   clave: "LIGHT", color: "#5B8DEF" },
-  { sufijo: "_tiempo_despierto", clave: "AWAKE", color: "#F0A030" },
 ];
 const FASE_NOMBRE = {
   es: { DEEP: "Profundo", REM: "REM", LIGHT: "Ligero", AWAKE: "Despierto" },
@@ -113,7 +164,7 @@ const DIAS = {
 
 const T = {
   es: {
-    faltaConfig: "Falta `prefix` (o `entities`), por ejemplo sensor.balance_jesus",
+    faltaConfig: "Falta `prefix` (o `entities`), por ejemplo sensor.mi_reloj",
     error: "No se pudieron leer las estadísticas.",
     leyendo: "Leyendo las últimas noches…",
     sinNoches: "Todavía no hay noches guardadas. Se irá llenando cada mañana.",
@@ -131,7 +182,7 @@ const T = {
     cerrar: "Cerrar",
   },
   en: {
-    faltaConfig: "Missing `prefix` (or `entities`), e.g. sensor.balance_jesus",
+    faltaConfig: "Missing `prefix` (or `entities`), e.g. sensor.mi_reloj",
     error: "Couldn't read the statistics.",
     leyendo: "Loading recent nights…",
     sinNoches: "No nights saved yet. It will fill in every morning.",
@@ -149,7 +200,7 @@ const T = {
     cerrar: "Close",
   },
   fr: {
-    faltaConfig: "`prefix` (ou `entities`) manquant, ex. sensor.balance_jesus",
+    faltaConfig: "`prefix` (ou `entities`) manquant, ex. sensor.mi_reloj",
     error: "Impossible de lire les statistiques.",
     leyendo: "Chargement des dernières nuits…",
     sinNoches: "Aucune nuit enregistrée pour le moment. Ça se remplira chaque matin.",
@@ -167,7 +218,7 @@ const T = {
     cerrar: "Fermer",
   },
   de: {
-    faltaConfig: "`prefix` (oder `entities`) fehlt, z. B. sensor.balance_jesus",
+    faltaConfig: "`prefix` (oder `entities`) fehlt, z. B. sensor.mi_reloj",
     error: "Die Statistiken konnten nicht gelesen werden.",
     leyendo: "Letzte Nächte werden geladen…",
     sinNoches: "Noch keine Nächte gespeichert. Füllt sich jeden Morgen.",
@@ -185,7 +236,7 @@ const T = {
     cerrar: "Schließen",
   },
   it: {
-    faltaConfig: "`prefix` (o `entities`) mancante, es. sensor.balance_jesus",
+    faltaConfig: "`prefix` (o `entities`) mancante, es. sensor.mi_reloj",
     error: "Impossibile leggere le statistiche.",
     leyendo: "Caricamento delle ultime notti…",
     sinNoches: "Ancora nessuna notte salvata. Si riempirà ogni mattina.",
@@ -219,7 +270,7 @@ const ESTILOS = `
          height: 100%; gap: 0; position: relative; }
   .col.pulsable { cursor: pointer; }
   .col.pulsable:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 2px; }
-  .pila { display: flex; flex-direction: column-reverse; border-radius: 4px;
+  .pila { display: flex; flex-direction: column; border-radius: 4px;
           overflow: hidden; transition: filter .12s; }
   .pila:hover { filter: brightness(1.3); }
   .trozo { width: 100%; }
@@ -294,17 +345,34 @@ const dur = (min) => {
 };
 
 class HaCompanionSleepWeekCard extends HTMLElement {
-  static getStubConfig() {
-    return { type: "custom:" + TAG, prefix: "sensor.balance_jesus" };
+  static getConfigElement() {
+    return document.createElement(TAG + "-editor");
+  }
+
+  static async getStubConfig(hass) {
+    const relojes = await relojesDeHA(hass);
+    const r = relojes.find((x) => x.claves.sleep_deep_minutes) || {};
+    return {
+      type: "custom:" + TAG,
+      entities: {
+        DEEP: r.claves.sleep_deep_minutes,
+        REM: r.claves.sleep_rem_minutes,
+        LIGHT: r.claves.sleep_light_minutes,
+        AWAKE: r.claves.sleep_wake_minutes,
+      },
+      score_entity: r.claves.sleep_score,
+    };
   }
 
   setConfig(config) {
-    if (!config || (!config.prefix && !config.entities)) {
-      throw new Error("Missing `prefix` (or `entities`), e.g. sensor.balance_jesus");
-    }
-    this._config = config;
+    // Antes esto exigía un `prefix` y, si no se ponía, el selector metía
+    // "sensor.mi_reloj" — el reloj del autor. Ahora, sin configuración,
+    // la tarjeta busca sola las cuatro fases del reloj activo: los sufijos
+    // "_sueno_profundo" y compañía solo existen en instalaciones en español.
+    this._config = config || {};
     this._noches = null;
     this._pedido = 0;
+    this._buscando = false;
     this._modalNoche = null;
     if (!this.shadowRoot) {
       this.attachShadow({ mode: "open" });
@@ -320,7 +388,36 @@ class HaCompanionSleepWeekCard extends HTMLElement {
     const primera = !this._hass;
     const cambioIdioma = this._hass && idioma(this._hass) !== idioma(hass);
     this._hass = hass;
+    if (!this._config.prefix && !this._config.entities) { this._buscar(); return; }
     this._quizasPedir(primera || cambioIdioma);
+  }
+
+  /** Sin prefijo ni entidades: se buscan las fases del reloj activo. */
+  async _buscar() {
+    if (this._buscando) return;
+    this._buscando = true;
+    const relojes = await relojesDeHA(this._hass);
+    const r = relojes.find((x) => x.claves.sleep_deep_minutes);
+    if (r) {
+      this._config = {
+        score_entity: r.claves.sleep_score,
+        ...this._config,                 // lo que el usuario puso manda
+        entities: {
+          DEEP: r.claves.sleep_deep_minutes,
+          REM: r.claves.sleep_rem_minutes,
+          LIGHT: r.claves.sleep_light_minutes,
+          AWAKE: r.claves.sleep_wake_minutes,
+        },
+      };
+    }
+    this._buscando = false;
+    if (this._config.entities) {
+      this._quizasPedir(true);
+    } else if (this._card) {
+      // Ni configuración ni reloj con fases de sueño: se dice qué falta en vez
+      // de dejar la tarjeta en blanco.
+      this._card.innerHTML = `<div class="vacio">${T[idioma(this._hass)].faltaConfig}</div>`;
+    }
   }
 
   getCardSize() { return 6; }
@@ -776,19 +873,176 @@ class HaCompanionSleepWeekCard extends HTMLElement {
   }
 }
 
+// --- Editor visual ---------------------------------------------------------
+// Sin esto, añadir la tarjeta desde la interfaz dejaba al usuario delante de un
+// YAML y teniéndose que saber el entity_id. Aquí se elige el reloj de una lista
+// y la tarjeta se configura sola. HTML corriente a propósito: los componentes
+// internos del frontend (ha-select, ha-form) cambian entre versiones de HA.
+const EDT = {
+  es: { reloj: "Reloj", auto: "El que esté dando datos", dias: "Días", sinRelojes: "No he encontrado ningún reloj de HA Companion." },
+  en: { reloj: "Watch", auto: "Whichever is reporting", dias: "Days", sinRelojes: "No HA Companion watch found." },
+  fr: { reloj: "Montre", auto: "Celle qui envoie des données", dias: "Jours", sinRelojes: "Aucune montre HA Companion trouvée." },
+  de: { reloj: "Uhr", auto: "Die gerade Daten sendet", dias: "Tage", sinRelojes: "Keine HA-Companion-Uhr gefunden." },
+  it: { reloj: "Orologio", auto: "Quello che sta inviando dati", dias: "Giorni", sinRelojes: "Nessun orologio HA Companion trovato." },
+};
+
+const ESTILOS_ED = `
+  .fila { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
+  label { font-size: 12px; color: var(--secondary-text-color); }
+  select, input { font: inherit; padding: 8px; border-radius: 6px;
+                  border: 1px solid var(--divider-color);
+                  background: var(--card-background-color); color: var(--primary-text-color); }
+  .aviso { color: var(--secondary-text-color); font-size: 13px; }
+`;
+
+class EditorBase extends HTMLElement {
+  setConfig(config) {
+    this._config = { ...(config || {}) };
+    if (!this.shadowRoot) {
+      this.attachShadow({ mode: "open" });
+      this.shadowRoot.innerHTML = `<style>${ESTILOS_ED}</style><div class="cuerpo"></div>`;
+    }
+    this._pinta();
+  }
+
+  set hass(hass) {
+    this._hass = hass;
+    if (this._relojes === undefined) {
+      this._relojes = null;                       // null = pidiendo
+      relojesDeHA(hass).then((r) => { this._relojes = r; this._pinta(); });
+    }
+  }
+
+  _emitir(cambios) {
+    this._config = { ...this._config, ...cambios };
+    Object.keys(this._config).forEach((k) => {
+      if (this._config[k] === undefined) delete this._config[k];
+    });
+    this.dispatchEvent(new CustomEvent("config-changed", {
+      detail: { config: this._config }, bubbles: true, composed: true,
+    }));
+    this._pinta();
+  }
+
+  _fila(cuerpo, etiqueta, control) {
+    const d = document.createElement("div");
+    d.className = "fila";
+    const l = document.createElement("label");
+    l.textContent = etiqueta;
+    d.append(l, control);
+    cuerpo.appendChild(d);
+  }
+
+  /** Desplegable de relojes. `clave` es la que debe tener el reloj para valer;
+   *  `alElegir(reloj|null)` devuelve los cambios de configuración. */
+  _selectorDeReloj(cuerpo, t, clave, seleccionado, alElegir) {
+    const sel = document.createElement("select");
+    const relojes = (this._relojes || []).filter((r) => r.claves[clave]);
+    const op0 = document.createElement("option");
+    op0.value = ""; op0.textContent = t.auto;
+    if (!seleccionado) op0.selected = true;
+    sel.appendChild(op0);
+    relojes.forEach((r) => {
+      const op = document.createElement("option");
+      op.value = r.device_id; op.textContent = r.nombre;
+      if (seleccionado === r.device_id) op.selected = true;
+      sel.appendChild(op);
+    });
+    sel.addEventListener("change", () => {
+      const r = relojes.find((x) => x.device_id === sel.value) || null;
+      this._emitir(alElegir(r));
+    });
+    this._fila(cuerpo, t.reloj, sel);
+    if (this._relojes && !relojes.length) {
+      const a = document.createElement("div");
+      a.className = "aviso";
+      a.textContent = t.sinRelojes;
+      cuerpo.appendChild(a);
+    }
+  }
+
+  _campoDias(cuerpo, t, porDefecto) {
+    const inp = document.createElement("input");
+    inp.type = "number"; inp.min = "2"; inp.max = "60";
+    inp.value = String(this._config.days || porDefecto);
+    inp.addEventListener("change", () => this._emitir({ days: Number(inp.value) || porDefecto }));
+    this._fila(cuerpo, t.dias, inp);
+  }
+}
+
+class HaCompanionSleepWeekCardEditor extends EditorBase {
+  _pinta() {
+    if (!this.shadowRoot) return;
+    const t = EDT[idioma(this._hass)];
+    const cuerpo = this.shadowRoot.querySelector(".cuerpo");
+    cuerpo.innerHTML = "";
+    const ents = this._config.entities || {};
+    const actual = (this._relojes || [])
+      .find((r) => r.claves.sleep_deep_minutes === ents.DEEP);
+    this._selectorDeReloj(cuerpo, t, "sleep_deep_minutes", actual && actual.device_id, (r) => ({
+      // Al elegir reloj se quita el `prefix` viejo: manda la lista de entidades.
+      prefix: undefined,
+      entities: r ? {
+        DEEP: r.claves.sleep_deep_minutes,
+        REM: r.claves.sleep_rem_minutes,
+        LIGHT: r.claves.sleep_light_minutes,
+        AWAKE: r.claves.sleep_wake_minutes,
+      } : undefined,
+      score_entity: r ? r.claves.sleep_score : undefined,
+      timeline_entity: r ? r.claves.sleep_timeline : undefined,
+    }));
+    this._campoDias(cuerpo, t, 7);
+  }
+}
+
+// Nombre y descripcion del selector de tarjetas. No hay `hass` cuando se
+// registra la tarjeta, asi que el idioma sale del <html lang> que pone el
+// propio frontend de Home Assistant.
+const FICHA = {
+  "es": [
+    "Sueño (semana)",
+    "Las últimas noches apiladas por fase, de las estadísticas."
+  ],
+  "en": [
+    "Sleep (week)",
+    "Recent nights stacked by phase, from the recorder statistics."
+  ],
+  "fr": [
+    "Sommeil (semaine)",
+    "Les dernières nuits empilées par phase, depuis les statistiques."
+  ],
+  "de": [
+    "Schlaf (Woche)",
+    "Die letzten Nächte nach Phasen gestapelt, aus den Statistiken."
+  ],
+  "it": [
+    "Sonno (settimana)",
+    "Le ultime notti impilate per fase, dalle statistiche."
+  ]
+};
+
 const definir = () => {
+  const l = String(document.documentElement.lang || "en").toLowerCase().slice(0, 2);
+  const lang = FICHA[l] ? l : "en";
   try {
     if (!customElements.get(TAG)) customElements.define(TAG, HaCompanionSleepWeekCard);
+    if (!customElements.get(TAG + "-editor")) {
+      customElements.define(TAG + "-editor", HaCompanionSleepWeekCardEditor);
+    }
   } catch (_) { /* ya registrada */ }
   window.customCards = window.customCards || [];
-  if (!window.customCards.some((c) => c.type === TAG)) {
-    window.customCards.push({
-      type: TAG,
-      name: "HA Companion · Sleep (week)",
-      description: "Recent nights stacked by phase, from the recorder statistics.",
-      preview: false,
-    });
-  }
+  // El reintento tambien REESCRIBE nombre y descripcion: cuando se registra la
+  // tarjeta, el frontend puede no haber puesto aun el idioma en <html>, asi que
+  // la primera pasada cae en ingles y la siguiente ya lo corrige.
+  const ficha = {
+    type: TAG,
+    name: "HA Companion \u00b7 " + FICHA[lang][0],
+    description: FICHA[lang][1],
+    preview: false,
+  };
+  const puesta = window.customCards.find((c) => c.type === TAG);
+  if (puesta) Object.assign(puesta, ficha);
+  else window.customCards.push(ficha);
 };
 
 definir();

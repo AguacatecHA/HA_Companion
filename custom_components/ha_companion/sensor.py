@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import json
 from datetime import datetime, timedelta, timezone
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
@@ -13,6 +13,8 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.const import EntityCategory
 from homeassistant.util import dt as dt_util
+from homeassistant.helpers.storage import Store
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.components.recorder import get_instance
 from homeassistant.components.recorder.statistics import statistics_during_period
 
@@ -57,6 +59,7 @@ async def async_setup_entry(
                 WatchSensor(hass, config_entry.entry_id, username, master_sensor_id, sensor_config)
             )
     entities.append(PublishedVersionSensor(coordinator, config_entry.entry_id, username))
+    entities.append(BackupDateSensor(hass, config_entry.entry_id, username))
     async_add_entities(entities, True)
 
 
@@ -148,7 +151,10 @@ class WatchSensor(SensorEntity):
                 )
                 return None
 
-        # --- Arrays de objetos (array_extract: "last/average/max/min") ---
+        # --- Arrays de objetos (array_extract) ---
+        # Modos: last / first / average / max / min / count / sum.
+        # `array_field` elige el campo dentro de cada objeto; sin él se opera
+        # sobre los elementos tal cual.
         elif self._config.get("array_extract"):
             try:
                 if isinstance(attr_value, str):
@@ -158,43 +164,46 @@ class WatchSensor(SensorEntity):
                 else:
                     return None
 
-                if not isinstance(data, list) or len(data) == 0:
+                if not isinstance(data, list):
                     return None
 
                 field = self._config.get("array_field")
                 mode = self._config["array_extract"]
 
+                # `count` y `sum` sí tienen respuesta para una lista vacía: cero
+                # siestas es un dato, no un "no se sabe". Los demás modos no.
+                if mode == "count":
+                    return len(data)
+                if mode == "sum":
+                    valores = self._valores_de(data, field)
+                    return sum(valores) if valores else 0
+                if len(data) == 0:
+                    return None
+
                 if mode == "last":
                     val = data[-1]
-                    return val.get(field) if field and isinstance(val, dict) else val
-
+                    result = val.get(field) if field and isinstance(val, dict) else val
                 elif mode == "first":
                     val = data[0]
-                    return val.get(field) if field and isinstance(val, dict) else val
-
+                    result = val.get(field) if field and isinstance(val, dict) else val
                 elif mode == "average":
-                    values = [
-                        (item.get(field) if field and isinstance(item, dict) else item)
-                        for item in data
-                    ]
-                    values = [v for v in values if v is not None]
-                    return round(sum(values) / len(values), 1) if values else None
-
+                    valores = self._valores_de(data, field)
+                    result = round(sum(valores) / len(valores), 1) if valores else None
                 elif mode == "max":
-                    values = [
-                        (item.get(field) if field and isinstance(item, dict) else item)
-                        for item in data
-                    ]
-                    values = [v for v in values if v is not None]
-                    return max(values) if values else None
-
+                    valores = self._valores_de(data, field)
+                    result = max(valores) if valores else None
                 elif mode == "min":
-                    values = [
-                        (item.get(field) if field and isinstance(item, dict) else item)
-                        for item in data
-                    ]
-                    values = [v for v in values if v is not None]
-                    return min(values) if values else None
+                    valores = self._valores_de(data, field)
+                    result = min(valores) if valores else None
+                else:
+                    return None
+
+                # Igual que en json_extract: un número de minutos se enseña como
+                # hora. Lo usan las siestas, que llegan en minutos desde las 00:00.
+                if self._config.get("time_convert") and result is not None:
+                    result = int(result)
+                    return f"{(result // 60) % 24:02d}:{result % 60:02d}"
+                return result
 
             except Exception as e:
                 _LOGGER.warning(
@@ -325,6 +334,15 @@ class WatchSensor(SensorEntity):
     # TENDENCIA 7 DÍAS (trend_extract) — de las estadísticas del propio
     # recorder de HA, no de nada que mande el reloj.
     # ============================================================
+    @staticmethod
+    def _valores_de(data: list, field: str | None) -> list:
+        """Los valores de una lista de objetos, saltando los que no hay."""
+        valores = [
+            (item.get(field) if field and isinstance(item, dict) else item)
+            for item in data
+        ]
+        return [v for v in valores if v is not None]
+
     @property
     def extra_state_attributes(self) -> dict:
         attrs = {}
@@ -792,3 +810,72 @@ class PublishedVersionSensor(CoordinatorEntity, SensorEntity):
     @property
     def available(self) -> bool:
         return self.coordinator.last_update_success and self.native_value is not None
+
+
+class BackupDateSensor(SensorEntity):
+    """Cuándo se hizo la última copia de la configuración del reloj.
+
+    La copia ya la refleja el binary sensor, pero ahí la fecha vive en un
+    atributo: para verla de un vistazo en una tarjeta, o para automatizar un
+    aviso de "esto lleva meses sin actualizarse", hace falta un sensor cuyo
+    VALOR sea la fecha. De eso va esta entidad.
+
+    Como el binary sensor, no sale de los atributos del sensor maestro: lee el
+    `Store` al arrancar y cada vez que llega la señal de copia nueva.
+    """
+
+    _attr_should_poll = False
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+
+    def __init__(self, hass: HomeAssistant, entry_id: str, username: str) -> None:
+        self.hass = hass
+        self._username = username
+        self._attr_native_value = None
+        self._entradas: int | None = None
+
+        self._attr_has_entity_name = True
+        # Ojo al añadir idiomas: la clave es `config_backup_date`, no
+        # `backup_date`. Buscar por el nombre del sensor no la encuentra.
+        self._attr_translation_key = "config_backup_date"
+        self._attr_unique_id = f"{entry_id}_config_backup_date"
+        self._attr_icon = "mdi:clock-check-outline"
+        self._attr_entity_category = EntityCategory.DIAGNOSTIC
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, f"{username}_watch")},
+            name=f"{username.capitalize()} Amazfit Watch",
+            manufacturer="Aguacatec Team",
+            model="Amazfit Watch",
+        )
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        return {"entries": self._entradas}
+
+    async def _lee_store(self) -> None:
+        """Igual que el binary sensor: la verdad está en el Store, no en la
+        señal, para que la fecha no sobreviva a una copia que ya no existe."""
+        from . import BACKUP_VERSION, _backup_key
+
+        store: Store = Store(self.hass, BACKUP_VERSION, _backup_key(self._username))
+        guardado = await store.async_load()
+        if guardado and guardado.get("config"):
+            self._attr_native_value = dt_util.parse_datetime(guardado.get("saved_at") or "")
+            self._entradas = len(guardado["config"])
+        else:
+            self._attr_native_value = None
+            self._entradas = None
+
+    async def _actualiza(self) -> None:
+        await self._lee_store()
+        self.async_write_ha_state()
+
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+        from . import BACKUP_SIGNAL
+
+        await self._lee_store()
+        self.async_on_remove(
+            async_dispatcher_connect(
+                self.hass, f"{BACKUP_SIGNAL}_{self._username}", self._actualiza
+            )
+        )

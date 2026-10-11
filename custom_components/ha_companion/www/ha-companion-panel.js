@@ -68,7 +68,7 @@ const T = {
     horasDePie: "Horas de pie", quemaGrasa: "Quema grasa", pai7: "PAI (7 días)",
     pulso: "Pulso", enReposo: "En reposo", maximoHoy: "Máximo hoy",
     estres: "Estrés", oxigeno: "Oxígeno", temperatura: "Temperatura",
-    altitud: "Altitud", presion: "Presión",
+    altitud: "Altitud", presion: "Presión", peso: "Peso",
     firmware: "Firmware", app: "App", ultimaPublicada: "Última publicada",
     zeppOs: "Zepp OS", apiMinima: "API mínima", brillo: "Brillo",
     discoLibre: "Disco libre", sincronizado: "Sincronizado",
@@ -106,7 +106,7 @@ const T = {
     horasDePie: "Standing hours", quemaGrasa: "Fat burn", pai7: "PAI (7 days)",
     pulso: "Heart rate", enReposo: "Resting", maximoHoy: "Max today",
     estres: "Stress", oxigeno: "Oxygen", temperatura: "Temperature",
-    altitud: "Altitude", presion: "Pressure",
+    altitud: "Altitude", presion: "Pressure", peso: "Weight",
     firmware: "Firmware", app: "App", ultimaPublicada: "Last published",
     zeppOs: "Zepp OS", apiMinima: "Min API", brillo: "Brightness",
     discoLibre: "Free storage", sincronizado: "Synced",
@@ -144,7 +144,7 @@ const T = {
     horasDePie: "Heures debout", quemaGrasa: "Combustion des graisses", pai7: "PAI (7 jours)",
     pulso: "Fréquence cardiaque", enReposo: "Au repos", maximoHoy: "Max aujourd'hui",
     estres: "Stress", oxigeno: "Oxygène", temperatura: "Température",
-    altitud: "Altitude", presion: "Pression",
+    altitud: "Altitude", presion: "Pression", peso: "Poids",
     firmware: "Firmware", app: "Application", ultimaPublicada: "Dernière publiée",
     zeppOs: "Zepp OS", apiMinima: "API minimale", brillo: "Luminosité",
     discoLibre: "Stockage libre", sincronizado: "Synchronisé",
@@ -182,7 +182,7 @@ const T = {
     horasDePie: "Stehstunden", quemaGrasa: "Fettverbrennung", pai7: "PAI (7 Tage)",
     pulso: "Herzfrequenz", enReposo: "Ruhe", maximoHoy: "Max heute",
     estres: "Stress", oxigeno: "Sauerstoff", temperatura: "Temperatur",
-    altitud: "Höhe", presion: "Luftdruck",
+    altitud: "Höhe", presion: "Luftdruck", peso: "Gewicht",
     firmware: "Firmware", app: "App", ultimaPublicada: "Zuletzt veröffentlicht",
     zeppOs: "Zepp OS", apiMinima: "Min. API", brillo: "Helligkeit",
     discoLibre: "Freier Speicher", sincronizado: "Synchronisiert",
@@ -220,7 +220,7 @@ const T = {
     horasDePie: "Ore in piedi", quemaGrasa: "Consumo grassi", pai7: "PAI (7 giorni)",
     pulso: "Frequenza cardiaca", enReposo: "A riposo", maximoHoy: "Max oggi",
     estres: "Stress", oxigeno: "Ossigeno", temperatura: "Temperatura",
-    altitud: "Altitudine", presion: "Pressione",
+    altitud: "Altitudine", presion: "Pressione", peso: "Peso",
     firmware: "Firmware", app: "App", ultimaPublicada: "Ultima pubblicata",
     zeppOs: "Zepp OS", apiMinima: "API minima", brillo: "Luminosità",
     discoLibre: "Spazio libero", sincronizado: "Sincronizzato",
@@ -352,6 +352,10 @@ const AHORA = (t) => [
   { k: "temperature", eti: t.temperatura,  icono: "mdi:thermometer",  uni: "°" },
   { k: "altitude_state", eti: t.altitud,   icono: "mdi:image-filter-hdr", uni: "m" },
   { k: "air_pressure_state", eti: t.presion, icono: "mdi:gauge",      uni: "hPa" },
+  // El peso lo teclea el usuario en el reloj, no lo mide: aquí está por
+  // comodidad, para verlo sin entrar en los diagnósticos. Su evolución va
+  // en la tarjeta ha-companion-weight-card.
+  { k: "user_weight", eti: t.peso,      icono: "mdi:weight-kilogram", uni: "kg" },
 ];
 
 const RELOJ = (t) => [

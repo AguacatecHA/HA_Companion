@@ -189,6 +189,21 @@
                     "in_motion": "動作中",
                     "not_sure": "不明"
                 }
+            },
+            "config_backup_date": {
+                "name": "バックアップ日時"
+            },
+            "naps_count": {
+                "name": "仮眠"
+            },
+            "naps_total": {
+                "name": "仮眠時間"
+            },
+            "naps_last_start": {
+                "name": "最後の仮眠の開始"
+            },
+            "naps_last_end": {
+                "name": "最後の仮眠の終了"
             }
         },
         "binary_sensor": {
@@ -233,6 +248,9 @@
             },
             "update_pending": {
                 "name": "アップデート利用可能"
+            },
+            "config_backup": {
+                "name": "設定のバックアップ"
             }
         }
     }

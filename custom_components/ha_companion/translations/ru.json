@@ -189,6 +189,21 @@
                     "in_motion": "В движении",
                     "not_sure": "Не определено"
                 }
+            },
+            "config_backup_date": {
+                "name": "Дата резервной копии"
+            },
+            "naps_count": {
+                "name": "Дневной сон"
+            },
+            "naps_total": {
+                "name": "Время дневного сна"
+            },
+            "naps_last_start": {
+                "name": "Начало последнего сна"
+            },
+            "naps_last_end": {
+                "name": "Конец последнего сна"
             }
         },
         "binary_sensor": {
@@ -233,6 +248,9 @@
             },
             "update_pending": {
                 "name": "Доступно обновление"
+            },
+            "config_backup": {
+                "name": "Резервная копия настроек"
             }
         }
     }
