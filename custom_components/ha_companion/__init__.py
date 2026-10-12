@@ -23,6 +23,8 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.util import dt as dt_util
 from homeassistant.loader import async_get_integration
 
+from .energy_view import HACompanionEnergyView
+
 _LOGGER = logging.getLogger(__name__)
 DOMAIN = "ha_companion"
 
@@ -438,6 +440,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if not hass.data[DOMAIN].get("backup_view_registered"):
         hass.http.register_view(HACompanionBackupView())
         hass.data[DOMAIN]["backup_view_registered"] = True
+
+    # Resumen de energía de hoy para la pantalla Energía del reloj.
+    if not hass.data[DOMAIN].get("energy_view_registered"):
+        hass.http.register_view(HACompanionEnergyView())
+        hass.data[DOMAIN]["energy_view_registered"] = True
 
     # Coordinator is shared — create it only once per HA instance
     if "version_coordinator" not in hass.data[DOMAIN]:

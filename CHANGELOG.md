@@ -20,6 +20,18 @@ y el versionado es [SemVer](https://semver.org/lang/es/).
   - Las tarjetas ya puestas encuentran solas el sensor de siestas del mismo
     reloj; no hay que tocar su configuración. El sensor "Tiempo total de sueño"
     no cambia: sigue siendo la cifra del reloj, la misma que da la app Zepp.
+- **Energía de hoy para el reloj.** Nueva dirección `/api/ha_companion/energy`
+  para la pantalla Energía de la app (2.15): lee el panel de Energía que el
+  usuario ya tiene montado en HA y devuelve lo de hoy con las estadísticas del
+  propio HA, las mismas cifras que el panel. Incluye:
+  - el consumo de la casa y su coste;
+  - la red (importado y vertido), la solar, la batería, el gas y el agua, según
+    lo que tenga configurado;
+  - lo que ha gastado cada aparato y la potencia que tira ahora.
+
+  En la app no hay nada que configurar. La potencia de ahora sale del sensor de
+  potencia que el usuario haya puesto en el panel o, si no puso ninguno, del
+  sensor de potencia del mismo dispositivo que el contador.
 
 ## [0.1.9] - 2026-10-08
 
