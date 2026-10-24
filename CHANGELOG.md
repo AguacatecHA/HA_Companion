@@ -4,7 +4,7 @@ Todos los cambios notables de la integración **HA Companion** para Home Assista
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el versionado es [SemVer](https://semver.org/lang/es/).
 
-## [0.1.10] - Sin publicar
+## [0.1.10] - 2026-10-24
 
 ### Añadido
 - **Las siestas, en las tarjetas de sueño.** Lo pidió un usuario: la siesta
