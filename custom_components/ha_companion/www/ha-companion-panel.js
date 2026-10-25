@@ -820,6 +820,7 @@ class HaCompanionPanel extends HTMLElement {
           REM: r.claves.sleep_rem_minutes,
           LIGHT: r.claves.sleep_light_minutes,
           AWAKE: r.claves.sleep_wake_minutes,
+          NAP: r.claves.naps_total,   // opcional: sin siestas, la tarjeta lo ignora
         },
         score_entity: r.claves.sleep_score,
         timeline_entity: r.claves.sleep_timeline,

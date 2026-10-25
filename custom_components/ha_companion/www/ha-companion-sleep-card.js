@@ -20,7 +20,16 @@
  *   entity: sensor.<algo>_cronologia_del_sueno   (opcional: si falta, se busca solo)
  *   score_entity: sensor.<...>_puntuacion_del_sueno   (opcional; también acepta
  *                                                       el sensor maestro, vía sleep_info)
+ *   naps_entity: sensor.<...>_tiempo_de_siestas  (opcional; si falta, se busca
+ *                                                  el del mismo reloj)
  *   title: Anoche                                (opcional)
+ *
+ * Las siestas no forman parte de la cronología (el reloj las apunta aparte,
+ * con su propio inicio y fin), así que no se dibujan en el hipnograma: una
+ * siesta de las 16:00 cae fuera del eje de la noche y estirarlo para que
+ * entrase aplastaría todo lo demás. Van en la leyenda, entre Despierto y
+ * Ligero, y suman al número grande. Lo pidió un usuario: para quien trabaja
+ * de noche, lo que Zepp llama siesta es su sueño de verdad.
  */
 
 const SOPORTADOS = ["es", "en", "fr", "de", "it"];
@@ -89,13 +98,14 @@ const FASE_CANON = {
 // en el historial de la tarjeta semanal — mejor cubrirlo aquí también).
 const STAGE_CANON = { WAKE_STAGE: "AWAKE", REM_STAGE: "REM", LIGHT_STAGE: "LIGHT", DEEP_STAGE: "DEEP" };
 const FASE_COLOR = { AWAKE: "#F0A030", REM: "#A78BFA", LIGHT: "#5B8DEF", DEEP: "#3D5AAF" };
+const COLOR_SIESTA = "#2BB5A0";
 const FASE_ORDEN = ["AWAKE", "LIGHT", "DEEP", "REM"];
 const FASE_CORTO = {
-  es: { AWAKE: "Despierto", REM: "REM", LIGHT: "Ligero", DEEP: "Profundo" },
-  en: { AWAKE: "Awake", REM: "REM", LIGHT: "Light", DEEP: "Deep" },
-  fr: { AWAKE: "Éveillé", REM: "REM", LIGHT: "Léger", DEEP: "Profond" },
-  de: { AWAKE: "Wach", REM: "REM", LIGHT: "Leicht", DEEP: "Tief" },
-  it: { AWAKE: "Sveglio", REM: "REM", LIGHT: "Leggero", DEEP: "Profondo" },
+  es: { AWAKE: "Despierto", REM: "REM", LIGHT: "Ligero", DEEP: "Profundo", NAP: "Siesta" },
+  en: { AWAKE: "Awake", REM: "REM", LIGHT: "Light", DEEP: "Deep", NAP: "Nap" },
+  fr: { AWAKE: "Éveillé", REM: "REM", LIGHT: "Léger", DEEP: "Profond", NAP: "Sieste" },
+  de: { AWAKE: "Wach", REM: "REM", LIGHT: "Leicht", DEEP: "Tief", NAP: "Nickerchen" },
+  it: { AWAKE: "Sveglio", REM: "REM", LIGHT: "Leggero", DEEP: "Profondo", NAP: "Pisolino" },
 };
 const COLOR_OTRO = "#64748B";
 
@@ -210,6 +220,7 @@ class HaCompanionSleepCard extends HTMLElement {
       type: "custom:ha-companion-sleep-card",
       entity: (reloj && reloj.claves.sleep_timeline) || "",
       score_entity: (reloj && reloj.claves.sleep_score) || undefined,
+      naps_entity: (reloj && reloj.claves.naps_total) || undefined,
     };
   }
 
@@ -219,6 +230,8 @@ class HaCompanionSleepCard extends HTMLElement {
     // exigirlo dejaba la tarjeta inservible desde el selector salvo en español.
     this._config = config || {};
     this._entidad = this._config.entity || null;
+    this._siestas = this._config.naps_entity || null;
+    this._siestasBuscadas = !!this._siestas;
     this._pintado = null;
     this._buscando = false;
     // Home Assistant llama a setConfig más de una vez sobre el mismo elemento
@@ -237,10 +250,13 @@ class HaCompanionSleepCard extends HTMLElement {
   set hass(hass) {
     this._hass = hass;
     if (!this._entidad) { this._buscar(); return; }
+    if (!this._siestasBuscadas) this._buscarSiestas();
     const st = hass.states[this._entidad];
+    const sn = this._siestas && hass.states[this._siestas];
     // Repintar solo si cambió algo: el hipnograma es caro y `hass` llega a
     // cada cambio de estado de la casa entera.
-    const huella = `${idioma(hass)}|` + (st ? `${st.state}|${st.last_updated}` : "sin-entidad");
+    const huella = `${idioma(hass)}|` + (st ? `${st.state}|${st.last_updated}` : "sin-entidad") +
+                   `|${sn ? sn.state : "-"}`;
     if (huella === this._pintado) return;
     this._pintado = huella;
     this._render(st);
@@ -260,6 +276,25 @@ class HaCompanionSleepCard extends HTMLElement {
     this._pintado = null;
     if (this._entidad) this._render(this._hass.states[this._entidad]);
     else this._render(null);
+  }
+
+  /** El panel y las tarjetas de antes de las siestas solo pasan `entity`: el
+   *  sensor de siestas se saca del mismo reloj, una vez. */
+  async _buscarSiestas() {
+    this._siestasBuscadas = true;
+    const relojes = await relojesDeHA(this._hass);
+    const reloj = relojes.find((x) => x.claves.sleep_timeline === this._entidad);
+    if (!reloj || !reloj.claves.naps_total) return;
+    this._siestas = reloj.claves.naps_total;
+    this._pintado = null;
+    this._render(this._hass.states[this._entidad]);
+  }
+
+  /** Minutos de siesta del día; 0 si no hay sensor o el reloj no lo manda. */
+  _minSiesta() {
+    const st = this._siestas && this._hass && this._hass.states[this._siestas];
+    const n = st ? Number(st.state) : NaN;
+    return Number.isFinite(n) && n > 0 ? Math.round(n) : 0;
   }
 
   getCardSize() { return 5; }
@@ -307,8 +342,21 @@ class HaCompanionSleepCard extends HTMLElement {
       }))
       .filter((x) => x.min > 0);
 
+    const siesta = this._minSiesta();
     if (!tramos.length) {
-      c.innerHTML = `<div class="vacio">${t.sinDatos}</div>`;
+      if (!siesta) {
+        c.innerHTML = `<div class="vacio">${t.sinDatos}</div>`;
+        return;
+      }
+      // Sin noche pero con siestas: el caso de quien duerme de día.
+      const cab0 = document.createElement("div");
+      cab0.className = "cab";
+      cab0.innerHTML = `<span class="total">${duracion(siesta)}</span>`;
+      c.appendChild(cab0);
+      const ley0 = document.createElement("div");
+      ley0.className = "leyenda";
+      ley0.appendChild(this._filaLeyenda(COLOR_SIESTA, corto.NAP, siesta, 100));
+      c.appendChild(ley0);
       return;
     }
 
@@ -333,7 +381,7 @@ class HaCompanionSleepCard extends HTMLElement {
     const cab = document.createElement("div");
     cab.className = "cab";
     cab.innerHTML =
-      `<span class="total">${duracion(dormido)}</span>` +
+      `<span class="total">${duracion(dormido + siesta)}</span>` +
       `<span class="rango">${tramos[0].start} → ${tramos[tramos.length - 1].stop} · ${duracion(total)} ${t.enCama}</span>` +
       (score != null
         ? `<span class="marca"><b>${score}</b>${t.puntos}</span>`
@@ -418,23 +466,36 @@ class HaCompanionSleepCard extends HTMLElement {
     c.appendChild(graf);
 
     // ---- leyenda con el reparto ----------------------------------------
+    // Con siestas, los porcentajes son sobre noche + siestas, para que la
+    // leyenda siga sumando 100. La siesta va justo detrás de Despierto (o la
+    // primera, si no hubo ratos despierto), que es donde la pidieron.
+    const base = total + siesta;
+    const filas = niveles.map((n) => ({
+      color: n.color, corto: n.corto, clave: n.clave,
+      min: tramos.filter((t2) => t2.fase === n.clave).reduce((a, x) => a + x.min, 0),
+    }));
+    if (siesta) {
+      const tras = filas.findIndex((f) => f.clave === "AWAKE") + 1;
+      filas.splice(tras, 0, { color: COLOR_SIESTA, corto: corto.NAP, clave: "NAP", min: siesta });
+    }
     const ley = document.createElement("div");
     ley.className = "leyenda";
-    niveles.forEach((n) => {
-      const min = tramos.filter((t2) => t2.fase === n.clave)
-                        .reduce((a, x) => a + x.min, 0);
-      if (!min) return;
-      const pct = (min / total) * 100;
-      const fila = document.createElement("div");
-      fila.className = "fila";
-      fila.innerHTML =
-        `<span class="punto" style="background:${n.color}"></span>` +
-        `<span class="nombre">${n.corto}</span>` +
-        `<span class="barra"><i style="width:${pct.toFixed(1)}%;background:${n.color}"></i></span>` +
-        `<span class="cifra">${duracion(min)} <em>${Math.round(pct)}%</em></span>`;
-      ley.appendChild(fila);
+    filas.forEach((f) => {
+      if (!f.min) return;
+      ley.appendChild(this._filaLeyenda(f.color, f.corto, f.min, (f.min / base) * 100));
     });
     c.appendChild(ley);
+  }
+
+  _filaLeyenda(color, nombre, min, pct) {
+    const fila = document.createElement("div");
+    fila.className = "fila";
+    fila.innerHTML =
+      `<span class="punto" style="background:${color}"></span>` +
+      `<span class="nombre">${nombre}</span>` +
+      `<span class="barra"><i style="width:${pct.toFixed(1)}%;background:${color}"></i></span>` +
+      `<span class="cifra">${duracion(min)} <em>${Math.round(pct)}%</em></span>`;
+    return fila;
   }
 }
 
@@ -554,6 +615,7 @@ class HaCompanionSleepCardEditor extends EditorBase {
     this._selectorDeReloj(cuerpo, t, "sleep_timeline", actual && actual.device_id, (r) => ({
       entity: r ? r.claves.sleep_timeline : undefined,
       score_entity: r ? r.claves.sleep_score : undefined,
+      naps_entity: r ? r.claves.naps_total : undefined,
     }));
   }
 }
@@ -617,6 +679,6 @@ const reintento = setInterval(() => {
   if (++intentos >= 60) clearInterval(reintento);   // 15 s y paramos
 }, 250);
 
-console.info("%c HA-COMPANION-SLEEP-CARD %c v1.2.0 ",
+console.info("%c HA-COMPANION-SLEEP-CARD %c v1.3.0 ",
   "color:#fff;background:#3D5AAF;font-weight:700",
   "color:#3D5AAF;background:#fff");

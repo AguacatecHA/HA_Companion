@@ -25,7 +25,8 @@
  *   type: custom:ha-companion-sleep-week-card
  *   prefix: sensor.mi_reloj          (opcional; de ahí compone las cuatro fases)
  *     — o bien —
- *   entities: {DEEP: sensor.x, REM: sensor.y, LIGHT: ..., AWAKE: ...}
+ *   entities: {DEEP: sensor.x, REM: sensor.y, LIGHT: ..., AWAKE: ..., NAP: ...}
+ *     (NAP, el tiempo de siestas, es opcional: sin él no hay tramo de siesta)
  *     (el panel las pasa así: son claves internas fijas, no traducidas — el
  *     texto que se ve sale de T/FASE_NOMBRE según `hass.language`)
  *   score_entity: sensor.<...>_puntuacion_del_sueno   (opcional)
@@ -35,6 +36,13 @@
  *     esa noche)
  *   days: 7                               (opcional)
  *   title: Las últimas noches             (opcional)
+ *
+ * Las SIESTAS son la excepción al corte de las 13:00: el reloj las pone a cero
+ * a medianoche, así que leerlas antes de las 13:00 perdería todas las de la
+ * tarde. De ellas se toma el máximo del día entero, y la columna del lunes
+ * queda como la noche del domingo al lunes más las siestas del lunes. Para
+ * quien trabaja de noche (duerme de 8 a 15 y Zepp lo apunta como siesta) es
+ * justo lo que hace falta.
  *
  * Pulsar una noche con datos abre un hipnograma (igual que
  * ha-companion-sleep-card, pero de ese día) vía `history/history_during_period`
@@ -107,19 +115,21 @@ async function relojesDeHA(hass) {
 // la otra.
 const FASES = [
   { sufijo: "_tiempo_despierto", clave: "AWAKE", color: "#F0A030" },
+  { sufijo: "_tiempo_de_siestas", clave: "NAP", color: "#2BB5A0" },
   { sufijo: "_sueno_ligero",   clave: "LIGHT", color: "#5B8DEF" },
   { sufijo: "_sueno_profundo", clave: "DEEP", color: "#3D5AAF" },
   { sufijo: "_sueno_rem",      clave: "REM",  color: "#A78BFA" },
 ];
 const FASE_NOMBRE = {
-  es: { DEEP: "Profundo", REM: "REM", LIGHT: "Ligero", AWAKE: "Despierto" },
-  en: { DEEP: "Deep", REM: "REM", LIGHT: "Light", AWAKE: "Awake" },
-  fr: { DEEP: "Profond", REM: "REM", LIGHT: "Léger", AWAKE: "Éveillé" },
-  de: { DEEP: "Tief", REM: "REM", LIGHT: "Leicht", AWAKE: "Wach" },
-  it: { DEEP: "Profondo", REM: "REM", LIGHT: "Leggero", AWAKE: "Sveglio" },
+  es: { DEEP: "Profundo", REM: "REM", LIGHT: "Ligero", AWAKE: "Despierto", NAP: "Siesta" },
+  en: { DEEP: "Deep", REM: "REM", LIGHT: "Light", AWAKE: "Awake", NAP: "Nap" },
+  fr: { DEEP: "Profond", REM: "REM", LIGHT: "Léger", AWAKE: "Éveillé", NAP: "Sieste" },
+  de: { DEEP: "Tief", REM: "REM", LIGHT: "Leicht", AWAKE: "Wach", NAP: "Nickerchen" },
+  it: { DEEP: "Profondo", REM: "REM", LIGHT: "Leggero", AWAKE: "Sveglio", NAP: "Pisolino" },
 };
 const FASE_COLOR = { AWAKE: "#F0A030", REM: "#A78BFA", LIGHT: "#5B8DEF", DEEP: "#3D5AAF" };
 const FASE_ORDEN = ["AWAKE", "LIGHT", "DEEP", "REM"];
+const FASE_SIESTA_COLOR = FASES.find((f) => f.clave === "NAP").color;
 const COLOR_OTRO = "#64748B";
 
 // Respaldo por si el historial trae un timeline sin `stage` (sensor viejo):
@@ -359,6 +369,7 @@ class HaCompanionSleepWeekCard extends HTMLElement {
         REM: r.claves.sleep_rem_minutes,
         LIGHT: r.claves.sleep_light_minutes,
         AWAKE: r.claves.sleep_wake_minutes,
+        NAP: r.claves.naps_total,
       },
       score_entity: r.claves.sleep_score,
     };
@@ -407,6 +418,7 @@ class HaCompanionSleepWeekCard extends HTMLElement {
           REM: r.claves.sleep_rem_minutes,
           LIGHT: r.claves.sleep_light_minutes,
           AWAKE: r.claves.sleep_wake_minutes,
+          NAP: r.claves.naps_total,
         },
       };
     }
@@ -471,16 +483,24 @@ class HaCompanionSleepWeekCard extends HTMLElement {
     const CORTE = 13;
     const porDia = new Map();
     const ultima = new Map();   // clave `${dia}|${id}` -> {hora, valor}
+    const fSiesta = fases.find((f) => f.clave === "NAP");
+    const idSiesta = fSiesta && fSiesta.id;
 
     for (const [id, filas] of Object.entries(res || {})) {
+      const esSiesta = id === idSiesta;
       for (const fila of filas) {
         const t = new Date(fila.start);
-        if (t.getHours() >= CORTE) continue;
+        // Las siestas, el máximo del día entero (ver la cabecera).
+        if (!esSiesta && t.getHours() >= CORTE) continue;
         if (fila.max == null) continue;
         const d = new Date(t); d.setHours(0, 0, 0, 0);
         const k = `${d.getTime()}|${id}`;
         const prev = ultima.get(k);
-        if (!prev || t.getHours() >= prev.hora) {
+        if (esSiesta) {
+          if (!prev || fila.max > prev.valor) {
+            ultima.set(k, { hora: t.getHours(), valor: fila.max, dia: d.getTime() });
+          }
+        } else if (!prev || t.getHours() >= prev.hora) {
           ultima.set(k, { hora: t.getHours(), valor: fila.max, dia: d.getTime() });
         }
       }
@@ -587,9 +607,9 @@ class HaCompanionSleepWeekCard extends HTMLElement {
           col.classList.add("pulsable");
           col.setAttribute("role", "button");
           col.setAttribute("tabindex", "0");
-          col.addEventListener("click", () => this._abrirNoche(x.fecha));
+          col.addEventListener("click", () => this._abrirNoche(x.fecha, x.fases.NAP));
           col.addEventListener("keydown", (e) => {
-            if (e.key === "Enter" || e.key === " ") { e.preventDefault(); this._abrirNoche(x.fecha); }
+            if (e.key === "Enter" || e.key === " ") { e.preventDefault(); this._abrirNoche(x.fecha, x.fases.NAP); }
           });
         }
       }
@@ -639,7 +659,8 @@ class HaCompanionSleepWeekCard extends HTMLElement {
    *  columna. Pide el ESTADO (no la estadística) de `timeline_entity` en ese
    *  día, con el mismo corte de las 13:00 que agrupó la columna, para que el
    *  hipnograma corresponda exactamente a lo que se ve en la barra. */
-  async _abrirNoche(dia) {
+  async _abrirNoche(dia, siesta) {
+    this._siestaModal = Math.round(Number(siesta) || 0);
     if (!this._config.timeline_entity) return;
     this._modalNoche = { estado: "cargando", fecha: dia };
     this._pintarModal();
@@ -743,7 +764,7 @@ class HaCompanionSleepWeekCard extends HTMLElement {
       const p = document.createElement("div"); p.className = "vacio"; p.textContent = t.sinDatosModal;
       caja.appendChild(p);
     } else {
-      this._pintarHipnograma(caja, this._modalNoche.timeline, lang, t);
+      this._pintarHipnograma(caja, this._modalNoche.timeline, lang, t, this._siestaModal || 0);
     }
 
     host.innerHTML = "";
@@ -760,13 +781,13 @@ class HaCompanionSleepWeekCard extends HTMLElement {
   }
 
   /** Mismo dibujo que ha-companion-sleep-card, adaptado al tamaño del modal. */
-  _pintarHipnograma(caja, timeline, lang, t) {
+  _pintarHipnograma(caja, timeline, lang, t, siesta) {
     const FASE_CORTO = {
-      es: { AWAKE: "Despierto", REM: "REM", LIGHT: "Ligero", DEEP: "Profundo" },
-      en: { AWAKE: "Awake", REM: "REM", LIGHT: "Light", DEEP: "Deep" },
-      fr: { AWAKE: "Éveillé", REM: "REM", LIGHT: "Léger", DEEP: "Profond" },
-      de: { AWAKE: "Wach", REM: "REM", LIGHT: "Leicht", DEEP: "Tief" },
-      it: { AWAKE: "Sveglio", REM: "REM", LIGHT: "Leggero", DEEP: "Profondo" },
+      es: { AWAKE: "Despierto", REM: "REM", LIGHT: "Ligero", DEEP: "Profundo", NAP: "Siesta" },
+      en: { AWAKE: "Awake", REM: "REM", LIGHT: "Light", DEEP: "Deep", NAP: "Nap" },
+      fr: { AWAKE: "Éveillé", REM: "REM", LIGHT: "Léger", DEEP: "Profond", NAP: "Sieste" },
+      de: { AWAKE: "Wach", REM: "REM", LIGHT: "Leicht", DEEP: "Tief", NAP: "Nickerchen" },
+      it: { AWAKE: "Sveglio", REM: "REM", LIGHT: "Leggero", DEEP: "Profondo", NAP: "Pisolino" },
     }[lang];
 
     const tramos = timeline
@@ -789,7 +810,7 @@ class HaCompanionSleepWeekCard extends HTMLElement {
     const mCab = document.createElement("div");
     mCab.className = "m-cab";
     mCab.innerHTML =
-      `<span class="m-total">${dur(dormido)}</span>` +
+      `<span class="m-total">${dur(dormido + siesta)}</span>` +
       `<span class="m-rango">${tramos[0].start} → ${tramos[tramos.length - 1].stop} · ${dur(total)} ${t.enCama}</span>`;
     caja.appendChild(mCab);
 
@@ -855,12 +876,21 @@ class HaCompanionSleepWeekCard extends HTMLElement {
     if (eje.children.length) graf.appendChild(eje);
     caja.appendChild(graf);
 
+    // Igual que la tarjeta de la noche: la siesta, tras Despierto, y los
+    // porcentajes sobre noche + siestas.
+    const filas = niveles.map((n) => ({
+      ...n, min: tramos.filter((x) => x.fase === n.clave).reduce((a, x) => a + x.min, 0),
+    }));
+    if (siesta) {
+      const tras = filas.findIndex((f) => f.clave === "AWAKE") + 1;
+      filas.splice(tras, 0, { clave: "NAP", color: FASE_SIESTA_COLOR, corto: FASE_CORTO.NAP, min: siesta });
+    }
     const ley = document.createElement("div");
     ley.className = "m-leyenda";
-    niveles.forEach((n) => {
-      const min = tramos.filter((x) => x.fase === n.clave).reduce((a, x) => a + x.min, 0);
+    filas.forEach((n) => {
+      const min = n.min;
       if (!min) return;
-      const pct = Math.round((min / total) * 100);
+      const pct = Math.round((min / (total + siesta)) * 100);
       const fila = document.createElement("div");
       fila.className = "m-fila";
       fila.innerHTML =
@@ -987,6 +1017,7 @@ class HaCompanionSleepWeekCardEditor extends EditorBase {
         REM: r.claves.sleep_rem_minutes,
         LIGHT: r.claves.sleep_light_minutes,
         AWAKE: r.claves.sleep_wake_minutes,
+        NAP: r.claves.naps_total,
       } : undefined,
       score_entity: r ? r.claves.sleep_score : undefined,
       timeline_entity: r ? r.claves.sleep_timeline : undefined,
@@ -1052,6 +1083,6 @@ const reintento = setInterval(() => {
   if (++intentos >= 60) clearInterval(reintento);
 }, 250);
 
-console.info("%c HA-COMPANION-SLEEP-WEEK-CARD %c v1.1.0 ",
+console.info("%c HA-COMPANION-SLEEP-WEEK-CARD %c v1.2.0 ",
   "color:#fff;background:#5B8DEF;font-weight:700",
   "color:#5B8DEF;background:#fff");
